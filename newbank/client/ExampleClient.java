@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
 public class ExampleClient extends Thread{
 	
@@ -14,13 +13,14 @@ public class ExampleClient extends Thread{
 	private BufferedReader userInput;
 	private Thread bankServerResponceThread;
 	
-	public ExampleClient(String ip, int port) throws UnknownHostException, IOException {
+	public ExampleClient(String ip, int port) throws IOException {
 		server = new Socket(ip,port);
 		userInput = new BufferedReader(new InputStreamReader(System.in)); 
 		bankServerOut = new PrintWriter(server.getOutputStream(), true); 
 		
 		bankServerResponceThread = new Thread() {
 			private BufferedReader bankServerIn = new BufferedReader(new InputStreamReader(server.getInputStream())); 
+			@Override
 			public void run() {
 				try {
 					while(true) {
@@ -29,7 +29,6 @@ public class ExampleClient extends Thread{
 					}
 				} catch (IOException e) {
 					e.printStackTrace();
-					return;
 				}
 			}
 		};
@@ -37,6 +36,7 @@ public class ExampleClient extends Thread{
 	}
 	
 	
+	@Override
 	public void run() {
 		while(true) {
 			try {
@@ -45,13 +45,12 @@ public class ExampleClient extends Thread{
 					bankServerOut.println(command);
 				}				
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
 	}
 	
-	public static void main(String[] args) throws UnknownHostException, IOException, InterruptedException {
+	public static void main(String[] args) throws IOException {
 		new ExampleClient("localhost",14002).start();
 	}
 }

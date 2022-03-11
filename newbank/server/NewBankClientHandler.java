@@ -24,7 +24,8 @@ public class NewBankClientHandler extends Thread {
 			} else {
 				Runtime.getRuntime().exec("clear");
 			}
-		} catch (final Exception e) {
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -249,7 +250,6 @@ public class NewBankClientHandler extends Thread {
 					String[] mainCommand = request.split(" ");
 					switch (mainCommand[0]) {
 						case "1":
-							// Show all balances. Change the request to SHOWMYACCOUNTS
 							request = "SHOWMYACCOUNTS";
 							break;
 						case "2":

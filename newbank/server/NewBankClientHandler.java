@@ -17,13 +17,8 @@ public class NewBankClientHandler extends Thread {
 
 	public static final void clearScreen() {
 		try {
-			final String os = System.getProperty("os.name");
-
-			if (os.contains("Windows")) {
-				Runtime.getRuntime().exec("cls");
-			} else {
-				Runtime.getRuntime().exec("clear");
-			}
+			System.out.print("\033[H\033[2J");  
+			System.out.flush(); 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

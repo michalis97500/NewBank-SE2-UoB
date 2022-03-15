@@ -8,6 +8,8 @@ public class Customer {
 
 	private ArrayList<Account> accounts;
 
+	private Boolean correctPassword;
+
 	public Customer() {
 		accounts = new ArrayList<>();
 	}

@@ -54,8 +54,7 @@ public class DatabaseHandler {
     }
   }
 
-  public void updateAccountInfo(String customerID, String username, String passhash, String name, String main,
-      String savings, String checking) { // Method implemented by M.Christou
+  public void updateAccountInfo(String customerID, String username, String passhash, String name, String main, String savings, String checking) { // Method implemented by M.Christou
 
     try (PreparedStatement ps = this.databaseConnection.prepareStatement(updateAllAccountInfo)) {
       ps.setString(1, customerID);
@@ -81,7 +80,7 @@ public class DatabaseHandler {
     }
   }
 
-  public Boolean setCustomerAccountBalance(String customerID, String accountType, String amount) throws SQLException {
+  public Boolean setCustomerAccountBalance(String customerID, String accountType, String amount) throws SQLException { // Method implemented by M. Christou
     try (PreparedStatement ps = this.databaseConnection.prepareStatement(
         "UPDATE " + accountTable + " SET " + accountType + "='" + amount + "' WHERE id = " + customerID)) {
       ps.executeUpdate();
@@ -94,14 +93,14 @@ public class DatabaseHandler {
     }
   }
 
-  public Boolean accountActive(String account) {
+  public Boolean accountActive(String account) { // Method implemented by M. Christou
     if (account == null || account.equals(noaccount) || account.equals("") || account.equals(" ")) {
       return false;
     }
     return true;
   }
 
-  public Boolean accountExists(String customerID, String accountType) throws SQLException {
+  public Boolean accountExists(String customerID, String accountType) throws SQLException {// Method implemented by M. Christou
     Statement statement = databaseConnection.createStatement();
     String accountbalance = null;
     try {
@@ -132,7 +131,7 @@ public class DatabaseHandler {
 
   }
 
-  public String showMyAccounts(String customerID) throws SQLException {
+  public String showMyAccounts(String customerID) throws SQLException {// Method implemented by M. Christou
     Statement statement = databaseConnection.createStatement();
     String mainBalance = null;
     String checkingBalance = null;
@@ -177,7 +176,7 @@ public class DatabaseHandler {
 
   }
 
-  public boolean customerExists(String customerID) throws SQLException {
+  public boolean customerExists(String customerID) throws SQLException {// Method implemented by M. Christou
     Statement statement = databaseConnection.createStatement();
     try {
       String idAndBalances = "SELECT id FROM " + accountTable;
@@ -196,7 +195,7 @@ public class DatabaseHandler {
     }
   }
 
-  public String checkLogInDetails(String username) throws SQLException {
+  public String checkLogInDetails(String username) throws SQLException {// Method implemented by M. Christou
     Statement statement = databaseConnection.createStatement();
     try {
       String userName = "SELECT id, username FROM " + accountTable;
@@ -215,7 +214,7 @@ public class DatabaseHandler {
     }
   }
 
-  public String getCustomerID(String username) throws SQLException {
+  public String getCustomerID(String username) throws SQLException {// Method implemented by M. Christou
     Statement statement = databaseConnection.createStatement();
     try {
       String idAndBalances = "SELECT id, username FROM " + accountTable;
@@ -234,7 +233,7 @@ public class DatabaseHandler {
     }
   }
 
-  public String createAccount(String customerID, String accountType) throws SQLException {
+  public String createAccount(String customerID, String accountType) throws SQLException {// Method implemented by M. Christou
     try (Statement statement = databaseConnection.createStatement()) {
       if (accountType.equals(main) || accountType.equals(checking) || accountType.equals(savings)) {
         String idAndAccount = "SELECT id, " + accountType + " FROM " + accountTable;
@@ -257,7 +256,7 @@ public class DatabaseHandler {
     }
   }
 
-  public Double getAccountBalance(String customerID, String accountType) throws SQLException {
+  public Double getAccountBalance(String customerID, String accountType) throws SQLException {// Method implemented by M. Christou
     try (Statement statement = databaseConnection.createStatement()) {
       if (Boolean.TRUE.equals(accountExists(customerID, accountType))) {
         String idAndAccount = "SELECT id, " + accountType + " FROM " + accountTable;
@@ -276,7 +275,7 @@ public class DatabaseHandler {
     }
   }
 
-  public String modifyAccountBalance(String customerID, String accountType, Double amount) throws SQLException {
+  public String modifyAccountBalance(String customerID, String accountType, Double amount) throws SQLException {// Method implemented by M. Christou
     Double currentBalance = 0.00;
     Double newAmount = 0.00;
     try {
@@ -297,7 +296,7 @@ public class DatabaseHandler {
     }
   }
 
-  public void addTestData() {
+  public void addTestData() {// Method implemented by M. Christou
     updateAccountInfo("1", "Bhagy", "pass", "Bhagy", "100", noaccount, noaccount);
     updateAccountInfo("2", "John", "pass", "John", "100", "50", "2500");
     updateAccountInfo("3", "Test", "pass", "Test", noaccount, "999", noaccount);

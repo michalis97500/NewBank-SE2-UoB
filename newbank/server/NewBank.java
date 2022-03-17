@@ -1,130 +1,118 @@
 package newbank.server;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.sql.SQLException;
 
 public class NewBank {
 
 	private static final NewBank bank = new NewBank();
-	private HashMap<String, Customer> customers;
+	DatabaseHandler dbHandle = new DatabaseHandler();
 
 	private NewBank() {
-		customers = new HashMap<>();
-		addTestData();
-	}
+		try {
+			dbHandle.connectDatabase();
+			dbHandle.initiateDatabase();
 
-	public Map<String, Customer> getCustomerList() {
-		return this.customers;
-	}
-
-	private void addTestData() {
-		Customer bhagy = new Customer();
-		bhagy.addAccount(new Account("Main", 1000.0));
-		customers.put("Bhagy", bhagy);
-
-		Customer christina = new Customer();
-		christina.addAccount(new Account("Savings", 1500.0));
-		customers.put("Christina", christina);
-
-		Customer john = new Customer();
-		john.addAccount(new Account("Checking", 250.0));
-		customers.put("John", john);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	public static NewBank getBank() {
 		return bank;
 	}
 
-	public synchronized CustomerID checkLogInDetails(String userName, String password) {
-		if (customers.containsKey(userName)) {
-			return new CustomerID(userName);
+	public synchronized String checkLogInDetails(String userName, String password) {
+		try {
+			return dbHandle.checkLogInDetails(userName);
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
 		return null;
 	}
 
-	public synchronized CustomerID getCustomerID(String userName) {
-		if (customers.containsKey(userName)) {
-			return new CustomerID(userName);
+	public synchronized String getCustomerID(String userName) {// Method implemented by M. Christou
+		try {
+			return dbHandle.getCustomerID(userName);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
 		}
-		return null;
 	}
 
-	public synchronized boolean customerExists(String customer) {
-		return customers.containsKey(customer);
+	public synchronized boolean userNameExists(String username) {// Method implemented by M. Christou
+		try {
+			if (dbHandle.getCustomerID(username) != null) {
+				return true;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return false;
 	}
 
 	// commands from the NewBank customer are processed in this method
-	public synchronized String processRequest(CustomerID customerID, String request) {
+	public synchronized String processRequest(String customerID, String request) {
 		String[] command = request.split(" ");
-		if (customers.containsKey(customerID.getKey())) {
-			switch (command[0]) {
-				case "SHOWMYACCOUNTS":
-					return showMyAccounts(customerID);
-				// Added by M. Christou
-				case "NEWACCOUNT":
-					return newAccount(customerID, command[1]);
-				// Added by M. Christou
-				case "MOVE":
-					return transferMoney(customerID, command[2], command[3], command[1]);
-				// Added by M. Christou
-				case "PAY":
-					return pay(command[1], customerID, command[2]);
-				default:
-					return "FAIL";
+		try {
+			if (dbHandle.customerExists(customerID)) {
+				switch (command[0]) {
+					case "SHOWMYACCOUNTS":
+						return showMyAccounts(customerID);
+					// Added by M. Christou
+					case "NEWACCOUNT":
+						return newAccount(customerID, command[1]);
+					// Added by M. Christou
+					case "MOVE":
+						return transferMoney(customerID, command[2], command[3], command[1]);
+					// Added by M. Christou
+					case "PAY":
+						return pay(command[1], customerID, command[2]);
+					default:
+						return "FAIL";
+				}
 			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		return "FAIL";
 	}
 
-	private String showMyAccounts(CustomerID customerID) {
-		Map<String, Double> accountsMap = customers.get(customerID.getKey()).getAccounts();
-		StringBuilder accountList = new StringBuilder();
-		accountList.append("\n");
-		for (Map.Entry<String, Double> entry : accountsMap.entrySet()) {
-			String accountName = entry.getKey();
-			Double accountValue = entry.getValue();
-			accountList.append(accountName + " : $" + accountValue.toString() + "\n");
+	private String showMyAccounts(String customerID) {
+		try {
+			return dbHandle.showMyAccounts(customerID);
+		} catch (Exception e) {
+			return "Cannot display accounts";
 		}
-		return accountList.toString();
+
 	}
 
-	private String newAccount(CustomerID customerID, String accountType) { // Method implemented by M. Christou
-		if (Boolean.FALSE.equals(accountExists(customerID, accountType))) {
-			customers.get(customerID.getKey()).addAccount(new Account(accountType, 0.00));
-			return "New account created successfully.\n";
+	private String newAccount(String customerID, String accountType) { // Method implemented by M. Christou
+		try {
+			if (Boolean.FALSE.equals(dbHandle.accountExists(customerID, accountType))) {
+				return dbHandle.createAccount(customerID, accountType);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
 		return "Account already exists";
 	}
 
-	public static <K, V> K getKeyFromValue(Map<K, Customer> map, V value) { // Method implemented by M.Christou
-		for (Map.Entry<K, Customer> entry : map.entrySet()) {
-			if (value.equals(entry.getValue())) {
-				return entry.getKey();
-			}
-		}
-		return null;
-	}
-
-	public double getAccountBalance(CustomerID customerID, String accountType) {// Method implemented by M.Christou
+	public double getAccountBalance(String customerID, String accountType) {// Method implemented by M.Christou
 		try {
-			double balanceToReturn = 0;
-			// Check account exists
-			if (Boolean.TRUE.equals(accountExists(customerID, accountType))) {
-				Map<String, Double> accountsMap = customers.get(customerID.getKey()).getAccounts();
-				return accountsMap.get(accountType);
-			}
-			return balanceToReturn;
+			return dbHandle.getAccountBalance(customerID, accountType);
 		} catch (Exception e) {
 			System.out.println("Error in getting account balance");
 			e.printStackTrace();
-			return 0;
+			return 0.00;
 		}
 	}
 
-	private String pay(String beneficiary, CustomerID customerID, String amount) { // Method by M.Christou
+	private String pay(String beneficiary, String customerID, String amount) { // Method by M.Christou
 		// We should have 3 seperate strings here.
 		double payment;
-		CustomerID beneficiaryID = null;
+		String beneficiaryID = null;
 		// Check amount is correct
 		try {
 			payment = Double.parseDouble(amount);
@@ -179,31 +167,27 @@ public class NewBank {
 		return "Balance in Main account insufficient.";
 	}
 
-	private String transaction(CustomerID customerID, String accountType, Double amount) { // Method implemented by
-																																													// M.Christou
-		return customers.get(customerID.getKey()).modifyBalance(accountType, amount);
+	private String transaction(String customerID, String accountType, Double amount) { // Method implemented by M.Christou
+		try {
+			return dbHandle.modifyAccountBalance(customerID, accountType, amount);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return "FAIL";
+		}
 	}
 
-	public Boolean accountExists(CustomerID customerID, String accountType) {// Method implemented by M.Christou
+	public Boolean accountExists(String customerID, String accountType) {// Method implemented by M.Christou
 		try {
-			Map<String, Double> accountsMap = customers.get(customerID.getKey()).getAccounts();
-			boolean doesExist = false;
-			for (String accountName : accountsMap.keySet()) {
-				if (accountName.equals(accountType)) {
-					doesExist = true;
-				}
-			}
-			return doesExist;
-
+			return dbHandle.accountExists(customerID, accountType);
 		} catch (Exception e) {
 			return false;
 		}
 	}
 
-	private String transferMoney(CustomerID customerID, String fromaccountType, String toaccountType, String amount) { // Method
-																																																											// implemented
-																																																											// by
-																																																											// M.Christou
+	private String transferMoney(String customerID, String fromaccountType, String toaccountType, String amount) { // Method
+																																																									// implemented
+																																																									// by
+																																																									// M.Christou
 		double payment;
 		// Check amount is correct
 		try {
@@ -245,4 +229,5 @@ public class NewBank {
 		}
 
 	}
+
 }

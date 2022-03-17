@@ -8,7 +8,7 @@ public class NewBankServer extends Thread{
 	
 	private ServerSocket server;
 	
-	public NewBankServer(int port) throws IOException {
+	public NewBankServer(int port) throws IOException{
 		server = new ServerSocket(port);
 	}
 	
@@ -35,7 +35,7 @@ public class NewBankServer extends Thread{
 		}
 	}
 	
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException{
 		// starts a new NewBankServer thread on a specified port number
 		new NewBankServer(14002).start();
 	}

@@ -15,10 +15,10 @@ public class NewBankClientHandler extends Thread {
 	private String savings = "Savings";
 	private String error = "INVALID_INPUT";
 
-	public static final void clearScreen() {
+	public final void clearScreen() {
 		try {
-			System.out.print("\033[H\033[2J");  
-			System.out.flush(); 
+			out.print("\033[H\033[2J");
+			out.flush();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -26,8 +26,8 @@ public class NewBankClientHandler extends Thread {
 
 	public void mainMenu() {
 		try {
-			out.println("Press any to return to main menu...");
-			in.readLine();
+			out.println("Press any key to return to main menu...");
+			in.read();
 			clearScreen();
 			printInterfaceOption();
 		} catch (Exception e) {
@@ -91,7 +91,7 @@ public class NewBankClientHandler extends Thread {
 		}
 	}
 
-	private String moveBuilder(CustomerID customerID) { // Method by M.Christou
+	private String moveBuilder(String customerID) { // Method by M.Christou
 		String fromaccountType = null;
 		String toaccountType = null;
 		String amount;
@@ -165,7 +165,7 @@ public class NewBankClientHandler extends Thread {
 		return error;
 	}
 
-	private String paymentBuilder(CustomerID customerID) { // Method by M.Christou
+	private String paymentBuilder(String customerID) { // Method by M.Christou
 		String accountType = "Main";
 		String amount;
 		String beneficiary;
@@ -177,7 +177,7 @@ public class NewBankClientHandler extends Thread {
 				out.println("Beneficiary is empty, aborting.");
 				return error;
 			}
-			if (!bank.customerExists(beneficiary)) {
+			if (!bank.userNameExists(beneficiary)) {
 				out.println("Beneficiary does not exist in bank, aborting.");
 				return error;
 			}
@@ -231,23 +231,27 @@ public class NewBankClientHandler extends Thread {
 			out.println("Checking Details...");
 			// authenticate user and get customer ID token from bank for use in subsequent
 			// requests
-			CustomerID customer = bank.checkLogInDetails(userName, password);
+			String customerID = bank.checkLogInDetails(userName, password);
 			// if the user is authenticated then get requests from the user and process them
-			if (customer != null) {
+			if (customerID != null) {
+				clearScreen();
 				out.println("Log In Successful. What do you want to do?");
+				out.print("\n");
 				printInterfaceOption(); // Added by M. Christou
 				while (true) {
 					String request = in.readLine();
-					System.out.println("Request from " + customer.getKey());
+					System.out.println("Request from ID: " + customerID);
 					// boolean to check if command is valid
 					Boolean validCommand = true;
 					// break down customer requests
 					String[] mainCommand = request.split(" ");
 					switch (mainCommand[0]) {
 						case "1":
+							clearScreen();
 							request = "SHOWMYACCOUNTS";
 							break;
 						case "2":
+							clearScreen();
 							String accountType = accountCreation();
 							request = "NEWACCOUNT " + accountType;
 							if (accountType.equals(error)) {
@@ -257,14 +261,16 @@ public class NewBankClientHandler extends Thread {
 							}
 							break;
 						case "3":
-							request = paymentBuilder(customer);
+							clearScreen();
+							request = paymentBuilder(customerID);
 							if (request.equals(error)) {
 								validCommand = false;
 								mainMenu();
 							}
 							break;
 						case "4":
-							request = moveBuilder(customer);
+							clearScreen();
+							request = moveBuilder(customerID);
 							if (request.equals(error)) {
 								validCommand = false;
 								mainMenu();
@@ -272,6 +278,7 @@ public class NewBankClientHandler extends Thread {
 							break;
 						case "5":
 						case "Logout":
+							clearScreen();
 							Thread.currentThread().interrupt();
 							run();
 							break;
@@ -286,7 +293,7 @@ public class NewBankClientHandler extends Thread {
 							break;
 					}
 					if (Boolean.TRUE.equals(validCommand)) {
-						String responce = bank.processRequest(customer, request);
+						String responce = bank.processRequest(customerID, request);
 						out.println(responce);
 						mainMenu();
 					}
@@ -297,7 +304,7 @@ public class NewBankClientHandler extends Thread {
 				Thread.currentThread().interrupt();
 				run();
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 			try {

@@ -15,15 +15,14 @@ public class NewBankClientHandler extends Thread {
 	private String savings = "Savings";
 	private String error = "INVALID_INPUT";
 
-	public static final void clearScreen() {
+	public final void clearScreen(String prompt) {
 		try {
-			final String os = System.getProperty("os.name");
-
-			if (os.contains("Windows")) {
-				Runtime.getRuntime().exec("cls");
-			} else {
-				Runtime.getRuntime().exec("clear");
+			out.print("\033[H\033[2J");
+			out.flush();
+			if (prompt!=null){
+				out.println(prompt + "\n");
 			}
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -31,9 +30,9 @@ public class NewBankClientHandler extends Thread {
 
 	public void mainMenu() {
 		try {
-			out.println("Press any to return to main menu...");
-			in.readLine();
-			clearScreen();
+			out.println("Press any key to return to main menu...");
+			in.read();
+			clearScreen(null);
 			printInterfaceOption();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -54,6 +53,7 @@ public class NewBankClientHandler extends Thread {
 		out.println("3. Pay person/entity - PAY <Entity> <Ammount>");
 		out.println("4. Transfer funds between accounts - MOVE <Amount> <From> <To>");
 		out.println("5. Logout");
+		out.println("6. Exit");
 		out.println("You may navigate the menu by entering the number or using the commands.");
 	}
 
@@ -96,81 +96,163 @@ public class NewBankClientHandler extends Thread {
 		}
 	}
 
-	private String moveBuilder(CustomerID customerID) { // Method by M.Christou
+	private String moveBuilder(String customerID) { // Method by M.Christou
 		String fromaccountType = null;
 		String toaccountType = null;
-		String amount;
-		// Load user accounts
-		try {
-			String responce = bank.processRequest(customerID, "SHOWMYACCOUNTS");
-			out.println(responce);
-		} catch (Exception e) {
-			out.println("Error in account display, aborting");
-			e.printStackTrace();
-			return error;
-		}
-
+		String amount = "";
+		String responce;
+		String[] accountsFrom;
+		String[] accountsTo;
+		StringBuilder accountDisplay = new StringBuilder();
+		Boolean accountFromBool = false;
+		Boolean accountToBool = false;
+		Boolean amountBool = false;
+		Double myBalance = 0.00;
+		String errorString = "";
+		int i = 1;
+	
 		// Select account to pay from
-		try {
-			out.println("Please select the account to pay from:");
-			String accountSelection = in.readLine();
-			if (Boolean.TRUE.equals(bank.accountExists(customerID, accountSelection.trim()))) {
-				fromaccountType = accountSelection.trim();
+		while(Boolean.FALSE.equals(accountFromBool)){
+			try {
+				responce = bank.processRequest(customerID, "SHOWMYACCOUNTS");
+				accountsFrom = responce.split("\n");
+				accountDisplay = new StringBuilder();
+				for (String account : accountsFrom){
+					accountDisplay.append( Integer.toString(i) + ". " + account + "\n");
+					i++;
+				}
+				out.println(accountDisplay.toString());
+				i=1;
+			} catch (Exception e) {
+				out.println("Error in account display, aborting");
+				e.printStackTrace();
+				return error;
 			}
-		} catch (Exception e) {
-			out.println("Error in account selection, aborting");
-			e.printStackTrace();
-			return error;
+			try {
+				out.println("Please select the account to pay from:");
+				String accountSelection = in.readLine();
+				errorString = accountSelection;
+				if(accountSelection.length() == 1 && accountsFrom != null && accountsFrom.length > 0){
+					String accountByNumber = accountsFrom[Integer.parseInt(accountSelection) - 1];
+					String[] accountSplit = accountByNumber.split(" ");
+					accountSelection = accountSplit[0];
+				}
+				if (Boolean.TRUE.equals(bank.accountExists(customerID, accountSelection.trim()))) {
+					fromaccountType = accountSelection.trim();
+					myBalance = bank.getAccountBalance(customerID, fromaccountType);
+					if(myBalance > 0){
+						out.println("Account " + fromaccountType + " selected. \n");
+						accountFromBool = true;
+					} else {
+						clearScreen("Account " + fromaccountType + " has no balance. Please choose another account.\n");
+					}
+					
+				} else {
+					clearScreen("Error, \"" + errorString + "\" is not a valid account, please try again: \n");
+				}
+			} catch (Exception e) {
+				clearScreen("Error, \"" + errorString + "\" is not a valid account, please try again: \n");
+				e.printStackTrace();
+			}
 		}
-
+		clearScreen("Account " + fromaccountType + " selected as source of transfer funds. \n");
 		// Select account to pay to
-		try {
-			out.println("Please select the account to pay to:");
-			String accountSelection = in.readLine();
-			if (Boolean.TRUE.equals(bank.accountExists(customerID, accountSelection.trim()))) {
-				toaccountType = accountSelection.trim();
-			}
-		} catch (Exception e) {
-			out.println("Error in account selection, aborting");
-			e.printStackTrace();
-			return error;
-		}
-
-		// Get account balance
-		try {
-			Double myBalance = bank.getAccountBalance(customerID, fromaccountType);
-			out.println("Please enter the amount to move. The available balance is : " + myBalance);
-			amount = in.readLine();
-			if (amount == null || amount.isEmpty() || amount.trim().isEmpty()) {
-				out.println("No amount entered, aborting.");
+		while(Boolean.FALSE.equals(accountToBool)){
+			try {
+				responce = bank.processRequest(customerID, "SHOWMYACCOUNTS");
+				StringBuilder accountDisplay2 = new StringBuilder();
+				String[] accountsToAll = responce.split("\n");
+				accountsTo = new String[accountsToAll.length - 1];
+				for (String account : accountsToAll){
+					if(!account.contains(fromaccountType)){
+						accountDisplay2.append( Integer.toString(i) + ". " + account + "\n");
+						accountsTo[i-1] = account;
+						i++;
+						
+					}
+				}
+				out.println(accountDisplay2.toString());
+				i=1;
+			} catch (Exception e) {
+				out.println("Error in account display, aborting");
+				e.printStackTrace();
 				return error;
 			}
-		} catch (Exception e) {
-			out.println("Error in amount");
-			e.printStackTrace();
-			return error;
-		}
-
-		// Make sure amount is parsable
-		try {
-			Double payment = Double.parseDouble(amount);
-			// check for negative numbers
-			if (payment < 0) {
-				out.println("Amount entered is negative, aborting.");
-				return error;
+			try {
+				out.println("Please select the account to pay to:");
+				String accountSelection = in.readLine();
+				errorString = accountSelection;
+				if(accountSelection.length() == 1 && accountsTo != null && accountsTo.length > 0){
+					String accountByNumber = accountsTo[Integer.parseInt(accountSelection) - 1];
+					String[] accountSplit = accountByNumber.split(" ");
+					accountSelection = accountSplit[0];
+				}
+				if (Boolean.TRUE.equals(bank.accountExists(customerID, accountSelection.trim()))) {
+					toaccountType = accountSelection.trim();
+					out.println("Account " + toaccountType + " selected. \n");
+					accountToBool = true;
+				} else {
+					clearScreen("Error, \"" + errorString + "\" is not a valid account, please try again: \nAccount " + fromaccountType + " selected as source of transfer funds. \n");
+				}
+			} catch (Exception e) {
+				clearScreen("Error, \"" + errorString + "\" is not a valid account, please try again: \nAccount " + fromaccountType + " selected as source of transfer funds. \n");
+				e.printStackTrace();
 			}
-		} catch (NumberFormatException e) {
-			out.println("Amount entered must be numbers only, aborting.");
-			return error;
 		}
 
+		clearScreen("Please enter the amount to move. The available balance is : " + myBalance);
+		while(Boolean.FALSE.equals(amountBool))
+		{
+			// Get account balance
+			try {
+				amount = in.readLine();
+				if (amount == null || amount.isEmpty() || amount.trim().isEmpty()) {
+					clearScreen("No amount entered.\nPlease enter the amount to move. The available balance is : " + myBalance);
+				}
+			} catch (Exception e) {
+				clearScreen("No amount entered.\nPlease enter the amount to move. The available balance is : " + myBalance);
+			}
+
+			// Make sure amount is parsable
+			try {
+				Double payment = Double.parseDouble(amount);
+				// check for negative numbers
+				if (payment < 0) {
+					clearScreen("Amount must be greater than 0.00.\nPlease enter the amount to move. The available balance is : " + myBalance);
+				}
+				if(payment > 0 ){
+					amountBool = true;
+				}
+				
+			} catch (NumberFormatException e) {
+				clearScreen("Invalid format, please use numbers only.\nPlease enter the amount to move. The available balance is : " + myBalance);
+			}
+		}
+		
 		if (fromaccountType != null && toaccountType != null) {
-			return "MOVE " + amount + " " + fromaccountType + " " + toaccountType;
+			clearScreen("Confirm transfer of $" +  amount + " from account \"" + fromaccountType + "\" to account \"" + toaccountType + "\"");
+			out.println("1. Confirm");
+			out.println("2. Reject");
+			String confirmation;
+			try {
+				confirmation = in.readLine();
+				switch (confirmation){
+					case "1":
+					case "Confirm":
+					case "Yes":
+						return "MOVE " + amount + " " + fromaccountType + " " + toaccountType;
+					default:
+						return error;
+			}
+		 } catch (IOException e) {
+				e.printStackTrace();
+			}
+			
 		}
 		return error;
 	}
 
-	private String paymentBuilder(CustomerID customerID) { // Method by M.Christou
+	private String paymentBuilder(String customerID) { // Method by M.Christou
 		String accountType = "Main";
 		String amount;
 		String beneficiary;
@@ -182,7 +264,7 @@ public class NewBankClientHandler extends Thread {
 				out.println("Beneficiary is empty, aborting.");
 				return error;
 			}
-			if (!bank.customerExists(beneficiary)) {
+			if (!bank.userNameExists(beneficiary)) {
 				out.println("Beneficiary does not exist in bank, aborting.");
 				return error;
 			}
@@ -236,23 +318,27 @@ public class NewBankClientHandler extends Thread {
 			out.println("Checking Details...");
 			// authenticate user and get customer ID token from bank for use in subsequent
 			// requests
-			CustomerID customer = bank.checkLogInDetails(userName, password);
+			String customerID = bank.checkLogInDetails(userName, password);
 			// if the user is authenticated then get requests from the user and process them
-			if (customer != null) {
+			if (customerID != null) {
+				clearScreen(null);
 				out.println("Log In Successful. What do you want to do?");
+				out.print("\n");
 				printInterfaceOption(); // Added by M. Christou
 				while (true) {
 					String request = in.readLine();
-					System.out.println("Request from " + customer.getKey());
+					System.out.println("Request from ID: " + customerID);
 					// boolean to check if command is valid
 					Boolean validCommand = true;
 					// break down customer requests
 					String[] mainCommand = request.split(" ");
 					switch (mainCommand[0]) {
 						case "1":
+							clearScreen(null);
 							request = "SHOWMYACCOUNTS";
 							break;
 						case "2":
+							clearScreen(null);
 							String accountType = accountCreation();
 							request = "NEWACCOUNT " + accountType;
 							if (accountType.equals(error)) {
@@ -262,14 +348,16 @@ public class NewBankClientHandler extends Thread {
 							}
 							break;
 						case "3":
-							request = paymentBuilder(customer);
+							clearScreen(null);
+							request = paymentBuilder(customerID);
 							if (request.equals(error)) {
 								validCommand = false;
 								mainMenu();
 							}
 							break;
 						case "4":
-							request = moveBuilder(customer);
+							clearScreen(null);
+							request = moveBuilder(customerID);
 							if (request.equals(error)) {
 								validCommand = false;
 								mainMenu();
@@ -277,9 +365,14 @@ public class NewBankClientHandler extends Thread {
 							break;
 						case "5":
 						case "Logout":
+							clearScreen(null);
 							Thread.currentThread().interrupt();
 							run();
 							break;
+						case "6":
+						case "Exit":
+								out.println("CLIENT_CLOSE_COMMAND");
+								break;
 						case "SHOWMYACCOUNTS":
 						case "NEWACCOUNT":
 						case "MOVE":
@@ -291,7 +384,7 @@ public class NewBankClientHandler extends Thread {
 							break;
 					}
 					if (Boolean.TRUE.equals(validCommand)) {
-						String responce = bank.processRequest(customer, request);
+						String responce = bank.processRequest(customerID, request);
 						out.println(responce);
 						mainMenu();
 					}
@@ -302,7 +395,7 @@ public class NewBankClientHandler extends Thread {
 				Thread.currentThread().interrupt();
 				run();
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 			try {

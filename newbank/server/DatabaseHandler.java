@@ -47,9 +47,9 @@ public class DatabaseHandler {
           + "Checking text\n"
           + ");";
       tablecreation.execute(accountHeaders);
-      System.out.println("Account_Table has been created");
+      System.out.println("Account_Table has been created or it already exists");
     } catch (Exception e) {
-      System.out.println("Account_Table already exists");
+      System.out.println("Account_Table cannot be created");
       e.printStackTrace();
     }
   }
@@ -297,9 +297,9 @@ public class DatabaseHandler {
   }
 
   public void addTestData() {// Method implemented by M. Christou
-    updateAccountInfo("1", "Bhagy", "pass", "Bhagy", "100", noaccount, noaccount);
+    updateAccountInfo("1", "Bhagy", "pass", "Bhagy", noaccount, noaccount, noaccount);
     updateAccountInfo("2", "John", "pass", "John", "100", "50", "2500");
-    updateAccountInfo("3", "Test", "pass", "Test", noaccount, "999", noaccount);
+    updateAccountInfo("3", "Test", "pass", "Test", noaccount, "999999", noaccount);
   }
 
 }

@@ -11,6 +11,7 @@ public class NewBank {
 		try {
 			dbHandle.connectDatabase();
 			dbHandle.initiateDatabase();
+			dbHandle.addTestData();
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -73,13 +74,12 @@ public class NewBank {
 				}
 			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return "FAIL";
 	}
 
-	private String showMyAccounts(String customerID) {
+	private String showMyAccounts(String customerID) { // Method implemented by M. Christou
 		try {
 			return dbHandle.showMyAccounts(customerID);
 		} catch (Exception e) {

@@ -29,12 +29,18 @@ public class ExampleClient extends Thread{
 						String responce = bankServerIn.readLine();
 						System.out.println(responce);
 						switch(responce) {
+							case "Please enter your current password :":
+							case "Please enter a new password :":
+							case "Please re-enter the new password :":
 							case "Enter Password":
 								passwordInput = true;
 								Console console = System.console();
 								char[] passarray = console.readPassword();
 								bankServerOut.println(new String(passarray));
 								passwordInput = false;
+								for (char character : passarray){
+									character='?';
+								}
 								break;
 							case "CLIENT_CLOSE_COMMAND":
 								System.exit(0);

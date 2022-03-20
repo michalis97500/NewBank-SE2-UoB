@@ -11,7 +11,6 @@ public class NewBank {
 		try {
 			dbHandle.connectDatabase();
 			dbHandle.initiateDatabase();
-			dbHandle.addTestData();
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -69,6 +68,8 @@ public class NewBank {
 					// Added by M. Christou
 					case "PAY":
 						return pay(command[1], customerID, command[2]);
+					case "CHANGEPASS":
+						return changePassword(customerID, command[2], command[3]);
 					default:
 						return "FAIL";
 				}
@@ -230,4 +231,7 @@ public class NewBank {
 
 	}
 
+	public String changePassword(String customerID, String oldPassHash, String newPassHash){
+		return dbHandle.changePassword(customerID,oldPassHash,newPassHash);
+	}
 }

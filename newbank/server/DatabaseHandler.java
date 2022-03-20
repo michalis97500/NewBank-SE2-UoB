@@ -302,4 +302,34 @@ public class DatabaseHandler {
     updateAccountInfo("3", "Test", "pass", "Test", noaccount, "999999", noaccount);
   }
 
+  public String changePassword(String customerID, String oldPassHash, String newPassHash){
+    Boolean oldPassCorrect = false;
+    try (Statement statement = databaseConnection.createStatement()) {
+      if (Boolean.TRUE.equals(customerExists(customerID))) {
+        String idAndPassHash = "SELECT id, passhash  FROM " + accountTable;
+        ResultSet results = statement.executeQuery(idAndPassHash);
+        while (results.next()) {
+          if (results.getString("id").equals(customerID)&&results.getString("passhash").equals(oldPassHash)) {
+            oldPassCorrect = true;
+          }
+        }
+      } 
+    } catch (Exception e) {
+      e.printStackTrace();
+      return "Error, please contact the bank with error code PC-001";
+    }
+  try (PreparedStatement ps = this.databaseConnection.prepareStatement(
+    "UPDATE " + accountTable + " SET passhash ='" + newPassHash + "' WHERE id = " + customerID)){
+    if(Boolean.TRUE.equals(oldPassCorrect)){
+      ps.executeUpdate();
+      return "Password has been changed.";
+    }
+    return "FAIL";
+    
+  } catch (Exception e) {
+    e.printStackTrace();
+    return "Error, please contact the bank with error code PC-002";
+  }
+}
+
 }

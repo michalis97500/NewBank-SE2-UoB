@@ -6,44 +6,43 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.Arrays;
 
+public class ExampleClient extends Thread {
 
-
-public class ExampleClient extends Thread{
-	
 	private Socket server;
-	private PrintWriter bankServerOut;	
+	private PrintWriter bankServerOut;
 	private BufferedReader userInput;
 	private Thread bankServerResponceThread;
 	private Boolean passwordInput = false;
 	private String salt = "";
 
-
 	public ExampleClient(String ip, int port) throws IOException {
-		server = new Socket(ip,port);
-		userInput = new BufferedReader(new InputStreamReader(System.in)); 
-		bankServerOut = new PrintWriter(server.getOutputStream(), true); 
+		server = new Socket(ip, port);
+		userInput = new BufferedReader(new InputStreamReader(System.in));
+		bankServerOut = new PrintWriter(server.getOutputStream(), true);
 		bankServerResponceThread = new Thread() {
-			private BufferedReader bankServerIn = new BufferedReader(new InputStreamReader(server.getInputStream())); 
+		private BufferedReader bankServerIn = new BufferedReader(new InputStreamReader(server.getInputStream()));
+
 			@Override
 			public void run() {
 				try {
 					Console console = System.console();
-					char[] passarray = null;
-					while(true) {
+					while (true) {
 						String responce = bankServerIn.readLine();
 						System.out.println(responce);
-						switch(responce) {
+						switch (responce) {
 							case "Please enter your current password :":
 							case "Enter Password":
 								salt = bankServerIn.readLine();
-								if(!salt.equals("FAIL") && salt.length() > 5){
-								passwordInput = true;
-								passarray = console.readPassword();
-								bankServerOut.println(BCrypt.hashpw(new String(passarray), salt));
-								passarray = null;
-								salt = null;
-								passwordInput = false;
+								if (!salt.equals("FAIL") && salt.length() > 5) {
+									passwordInput = true;
+									char[] passarray = null;
+									passarray = console.readPassword();
+									bankServerOut.println(BCrypt.hashpw(new String(passarray), salt));
+									Arrays.fill(passarray, '*');
+									salt = null;
+									passwordInput = false;
 								}
 								break;
 							case "Please enter a new password :":
@@ -51,23 +50,25 @@ public class ExampleClient extends Thread{
 								salt = BCrypt.gensalt();
 								Boolean goodPass = false;
 								String passHashConfirm = null;
-								String passHash= null;
-								while(!goodPass){
+								String passHash = null;
+								while (Boolean.FALSE.equals(goodPass)) {
+									char[] passarray = null;
 									passarray = console.readPassword();
-									if(checkPass(new String(passarray))){
+									if (checkPass(new String(passarray))) {
 										passHash = BCrypt.hashpw(new String(passarray), salt);
 										goodPass = true;
 									}
-									passarray = null;
-									if(!goodPass){
+									Arrays.fill(passarray, '*');
+									if (Boolean.FALSE.equals(goodPass)) {
 										System.out.println("Please re-enter a new password :");
 									}
 								}
 								System.out.println("\nPlease confirm the password :");
+								char[] passarray = null;
 								passarray = console.readPassword();
 								passHashConfirm = BCrypt.hashpw(new String(passarray), salt);
-								passarray = null;
-								if(passHash != null && passHashConfirm != null && passHash.equals(passHashConfirm) ){
+								Arrays.fill(passarray, '*');
+								if (passHash != null && passHashConfirm != null && passHash.equals(passHashConfirm)) {
 									bankServerOut.println(passHash + " __SALT__ " + salt);
 									passwordInput = false;
 									break;
@@ -92,51 +93,54 @@ public class ExampleClient extends Thread{
 	}
 
 	@Override
-	public void run(){
-			while(true) {
-				try {
-					if(Boolean.FALSE.equals(passwordInput)){
-						String command = userInput.readLine();
-						bankServerOut.println(command);
-					}
-					Thread.sleep(100);
-				} catch (IOException | InterruptedException e) {
-					e.printStackTrace();
+	public void run() {
+		while (true) {
+			try {
+				if (Boolean.FALSE.equals(passwordInput)) {
+					String command = userInput.readLine();
+					bankServerOut.println(command);
+				}
+				Thread.sleep(100);
+			} catch (IOException | InterruptedException e) {
+				e.printStackTrace();
+				if (e instanceof InterruptedException) {
+					Thread.currentThread().interrupt();
 				}
 			}
+		}
 	}
 
-	private boolean checkPass(String password){
-			try {
-				if(password.length() < 8){
-					System.out.println("Error : Password minimum length is 8.");
-					return false;
-				}
-				if(!password.matches("(?=.*[0-9]).*") ){
-					System.out.println("Error : Password must contain at least 1 digit");
-					return false;
-				}
-				if(!password.matches("(?=.*[A-Z]).*") ){
-					System.out.println("Error : Password must contain at least 1 uppercase letter");
-					return false;
-				}
-				if(!password.matches("(?=.*[a-z]).*") ){
-					System.out.println("Error : Password must contain at least 1 lowercase letter");
-					return false;
-				}
-				if(!password.matches("(?=.*[~!@#$%^&*()_-]).*") ){
-					System.out.println("Error : Password must contain at least 1 special character");
-					return false;
-				}
-			return true;
-			} catch (Exception e) {
-				e.printStackTrace();
+	private boolean checkPass(String password) {
+		try {
+			if (password.length() < 8) {
+				System.out.println("Error : Password minimum length is 8.");
 				return false;
+			}
+			if (!password.matches("(?=.*[0-9]).*")) {
+				System.out.println("Error : Password must contain at least 1 digit");
+				return false;
+			}
+			if (!password.matches("(?=.*[A-Z]).*")) {
+				System.out.println("Error : Password must contain at least 1 uppercase letter");
+				return false;
+			}
+			if (!password.matches("(?=.*[a-z]).*")) {
+				System.out.println("Error : Password must contain at least 1 lowercase letter");
+				return false;
+			}
+			if (!password.matches("(?=.*[~!@#$%^&*()_-]).*")) {
+				System.out.println("Error : Password must contain at least 1 special character");
+				return false;
+			}
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
 		}
-	
+
 	}
-	
+
 	public static void main(String[] args) throws IOException {
-		new ExampleClient("localhost",14002).start();
+		new ExampleClient("localhost", 14002).start();
 	}
 }

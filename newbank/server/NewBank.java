@@ -23,7 +23,7 @@ public class NewBank {
 
 	public synchronized String checkLogInDetails(String userName, String password) {
 		try {
-			return dbHandle.checkLogInDetails(userName,password);
+			return dbHandle.checkLogInDetails(userName, password);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -242,7 +242,7 @@ public class NewBank {
 
 	}
 
-	public String changePassword(String customerID, String oldPassHash, String newPassHash, String salt){
-		return dbHandle.changePassword(customerID,oldPassHash,newPassHash,salt);
+	public String changePassword(String customerID, String oldPassHash, String newPassHash, String salt) {
+		return dbHandle.changePassword(customerID, oldPassHash, newPassHash, salt);
 	}
 }

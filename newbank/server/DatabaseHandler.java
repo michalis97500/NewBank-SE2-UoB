@@ -1,6 +1,7 @@
 package newbank.server;
 
 import java.sql.*;
+import newbank.client.BCrypt;
 
 public class DatabaseHandler {
   private Connection databaseConnection;
@@ -10,7 +11,7 @@ public class DatabaseHandler {
   private static String checking = "Checking";
   private static String accountTable = "Account_Table";
   private static String updateAllAccountInfo = "INSERT INTO " + accountTable
-      + "(id, username, passhash, name, Main, Savings, Checking) VALUES(?, ?, ?, ?, ?, ?, ?)";
+      + "(id, username, passhash, salt, name, Main, Savings, Checking) VALUES(?, ?, ?, ?, ?, ?, ?, ?)";
 
   public Boolean connectDatabase() throws SQLException { // Method implemented by M.Christou
     try {
@@ -41,6 +42,7 @@ public class DatabaseHandler {
           + "id text PRIMARY KEY,\n"
           + "username text NOT NULL,\n"
           + "passhash text NOT NULL,\n"
+          + "salt text NOT NULL,\n"
           + "name text NOT NULL,\n"
           + "Main text,\n"
           + "Savings text,\n"
@@ -54,20 +56,20 @@ public class DatabaseHandler {
     }
   }
 
-  public void updateAccountInfo(String customerID, String username, String passhash, String name, String main, String savings, String checking) { // Method implemented by M.Christou
-
+  public void updateAccountInfo(String customerID, String username, String passhash, String salt, String name, String main, String savings, String checking) { // Method implemented by M.Christou
     try (PreparedStatement ps = this.databaseConnection.prepareStatement(updateAllAccountInfo)) {
       ps.setString(1, customerID);
       ps.setString(2, username);
       ps.setString(3, passhash);
-      ps.setString(4, name);
-      ps.setString(5, main);
-      ps.setString(6, savings);
-      ps.setString(7, checking);
+      ps.setString(4, salt);
+      ps.setString(5, name);
+      ps.setString(6, main);
+      ps.setString(7, savings);
+      ps.setString(8, checking);
       ps.executeUpdate();
       System.out.println("Table account_info updated, new values added: ");
       System.out
-          .print(customerID + "\t" + username + "\t" + passhash + "\t" + name + "\t" + main + "\t" + savings + "\t"
+          .print(customerID + "\t" + username + "\t" + passhash+ "\t" + salt + "\t" + name + "\t" + main + "\t" + savings + "\t"
               + checking);
       System.out.println();
 
@@ -195,13 +197,13 @@ public class DatabaseHandler {
     }
   }
 
-  public String checkLogInDetails(String username) throws SQLException {// Method implemented by M. Christou
+  public String checkLogInDetails(String username, String password) throws SQLException {// Method implemented by M. Christou
     Statement statement = databaseConnection.createStatement();
     try {
-      String userName = "SELECT id, username FROM " + accountTable;
+      String userName = "SELECT id, username, passhash FROM " + accountTable;
       ResultSet results = statement.executeQuery(userName);
       while (results.next()) {
-        if (username.equals(results.getString("username"))) { // if we are here that means we have the correct customer
+        if (username.equals(results.getString("username")) && password.equals(results.getString("passhash"))) { // if we are here that means we have the correct customer
           return results.getString("id");
         }
       }
@@ -222,6 +224,25 @@ public class DatabaseHandler {
       while (results.next()) {
         if (username.equals(results.getString("username"))) { // if we are here that means we have the correct customer
           return results.getString("id");
+        }
+      }
+      return null;
+    } catch (Exception e) {
+      e.printStackTrace();
+      return null;
+    } finally {
+      statement.close();
+    }
+  }
+
+  public String getCurrentSalt(String customerID) throws SQLException {// Method implemented by M. Christou
+    Statement statement = databaseConnection.createStatement();
+    try {
+      String idAndSalt = "SELECT id, salt FROM " + accountTable;
+      ResultSet results = statement.executeQuery(idAndSalt);
+      while (results.next()) {
+        if (customerID.equals(results.getString("id"))) { // if we are here that means we have the correct customer
+          return results.getString("salt");
         }
       }
       return null;
@@ -297,13 +318,14 @@ public class DatabaseHandler {
   }
 
   public void addTestData() {// Method implemented by M. Christou
-    updateAccountInfo("1", "Bhagy", "pass", "Bhagy", noaccount, noaccount, noaccount);
-    updateAccountInfo("2", "John", "pass", "John", "100", "50", "2500");
-    updateAccountInfo("3", "Test", "pass", "Test", noaccount, "999999", noaccount);
+    updateAccountInfo("1", "Bhagy", "pass", "$2a$10$RkrdW3pxOvLIZlTV0kfiiu" , "Bhagy", noaccount, noaccount, noaccount);
+    updateAccountInfo("2", "John", "pass", "$2a$10$RkrdW3pxOvLIZlTV0kfiiu", "John", "100", "50", "2500");
+    updateAccountInfo("3", "Test", "pass", "$2a$10$RkrdW3pxOvLIZlTV0kfiiu" , "Test", noaccount, "999999", noaccount);
   }
 
-  public String changePassword(String customerID, String oldPassHash, String newPassHash){
+  public String changePassword(String customerID, String oldPassHash, String newPassHash,String salt){
     Boolean oldPassCorrect = false;
+    Boolean passHashChanged = false;
     try (Statement statement = databaseConnection.createStatement()) {
       if (Boolean.TRUE.equals(customerExists(customerID))) {
         String idAndPassHash = "SELECT id, passhash  FROM " + accountTable;
@@ -318,18 +340,34 @@ public class DatabaseHandler {
       e.printStackTrace();
       return "Error, please contact the bank with error code PC-001";
     }
+
+  //update passHash
   try (PreparedStatement ps = this.databaseConnection.prepareStatement(
     "UPDATE " + accountTable + " SET passhash ='" + newPassHash + "' WHERE id = " + customerID)){
     if(Boolean.TRUE.equals(oldPassCorrect)){
       ps.executeUpdate();
-      return "Password has been changed.";
+      passHashChanged = true;
     }
-    return "FAIL";
-    
   } catch (Exception e) {
     e.printStackTrace();
     return "Error, please contact the bank with error code PC-002";
   }
+
+//update Salt
+try (PreparedStatement ps = this.databaseConnection.prepareStatement(
+  "UPDATE " + accountTable + " SET salt ='" + salt + "' WHERE id = " + customerID)){
+  if(Boolean.TRUE.equals(oldPassCorrect) && Boolean.TRUE.equals(passHashChanged)){
+    ps.executeUpdate();
+    return "Password has been changed.";
+  }
+  return "Error, please contact the bank with error code PC-003";
+
+  
+} catch (Exception e) {
+  e.printStackTrace();
+  return "Error, please contact the bank with error code PC-002";
 }
 
+
+}
 }

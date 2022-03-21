@@ -48,36 +48,23 @@ public class NewBankClientHandler extends Thread {
 	public String changePassword(String customerID){
 		try {
 			clearScreen("Please enter your current password :");
+			out.println(getCurrentSalt(customerID));
 			String oldPassHash = in.readLine();
 			clearScreen("Please enter a new password :");
 			String newPassHash = in.readLine();
-			clearScreen("Please re-enter the new password :");
-			String newPassTest = in.readLine();
-			if(newPassHash.equals(oldPassHash)){
-				return "Error : The new password cannot be identical to the old password";
+			if(!newPassHash.contains("__SALT__")){
+				return error;
 			}
-			if(newPassHash.length() < 8){
-				return "Error : Password minimum length is 8.";
-			}
-			if(!newPassHash.matches("(?=.*[0-9]).*") ){
-				return "Error : Password must contain at least 1 digit";
-			}
-			if(!newPassHash.matches("(?=.*[A-Z]).*") ){
-				return "Error : Password must contain at least 1 uppercase letter";
-			}
-			if(!newPassHash.matches("(?=.*[a-z]).*") ){
-				return "Error : Password must contain at least 1 lowercase letter";
-			}
-			if(!newPassHash.matches("(?=.*[~!@#$%^&*()_-]).*") )
-				return "Error : Password must contain at least 1 special character";
-			if(!newPassHash.equals(newPassTest)){
-				return "Error : Passwords do not match";
-			}
-		return "CHANGEPASS " + customerID + " " + oldPassHash + " " + newPassHash ;
+			String[] split = newPassHash.split(" __SALT__ ");
+			return "CHANGEPASS " + customerID + " " + oldPassHash + " " + split[0] + " "  + split[1] ;
 		} catch (Exception e) {
 			e.printStackTrace();
-			return "Error :";
+			return error;
 		}
+	}
+
+	private String getCurrentSalt(String customerID) {
+		return bank.processRequest(customerID, "GETCURRENTSALT");
 	}
 
 	public NewBankClientHandler(Socket s) throws IOException {
@@ -402,6 +389,7 @@ public class NewBankClientHandler extends Thread {
 			String userName = in.readLine();
 			// ask for password
 			out.println("Enter Password");
+			out.println(getCurrentSalt(bank.getCustomerID(userName)));
 			String password = in.readLine();
 			out.println("Checking Details...");
 			// authenticate user and get customer ID token from bank for use in subsequent
@@ -467,9 +455,9 @@ public class NewBankClientHandler extends Thread {
 								break;
 						case "7":
 							request = changePassword(customerID);
-							if (request.startsWith("Error : ")){
+							if (request.equals(error)){
 								validCommand = false;
-								out.println(request);
+								out.println("Password has not been changed.");
 								mainMenu();
 							}
 							break;

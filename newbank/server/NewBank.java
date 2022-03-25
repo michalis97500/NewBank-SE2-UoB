@@ -70,7 +70,9 @@ public class NewBank {
 						return pay(command[1], customerID, command[2]);
 					case "CHANGEPASS":
 						return changePassword(customerID, command[2], command[3]);
-					//Testing
+					// Testing for new branch
+						case "MICROLOAN":
+						return "TESTING";
 					default:
 						return "FAIL";
 				}

@@ -16,7 +16,7 @@ public class NewBankClientHandler extends Thread {
 	private String error = "INVALID_INPUT";
 	private String cancel = "CANCEL";
 
-	public final void clearScreen(String prompt) {
+	public final void clearScreen(String prompt) { // Method implemented by M. Christou
 		try {
 			out.println("\033[H\033[2J");
 			out.flush();
@@ -29,7 +29,7 @@ public class NewBankClientHandler extends Thread {
 		}
 	}
 
-	public void mainMenu() {
+	public void mainMenu() { // Method implemented by M. Christou
 		try {
 			out.println("Press any key to return to main menu...");
 			in.read();
@@ -41,7 +41,7 @@ public class NewBankClientHandler extends Thread {
 		}
 	}
 
-	public String changePassword(String customerID) {
+	public String changePassword(String customerID) {// Method implemented by M. Christou
 		try {
 			clearScreen("Please enter your current password :");
 			out.println(getCurrentSalt(customerID));
@@ -69,7 +69,7 @@ public class NewBankClientHandler extends Thread {
 		out = new PrintWriter(s.getOutputStream(), true);
 	}
 
-	private void printInterfaceOption() {
+	private void printInterfaceOption() { 
 		// Added by M. Christou
 		out.println("1. Show all accounts inforamtion - SHOWMYACCOUNTS");
 		out.println("2. Create account - NEWACCOUNT <Name>");

@@ -338,7 +338,7 @@ public class DatabaseHandler {
     updateAccountInfo("3", "Test", "pass", "$2a$10$RkrdW3pxOvLIZlTV0kfiiu", "Test", noaccount, "999999", noaccount);
   }
 
-  public String changePassword(String customerID, String oldPassHash, String newPassHash, String salt) {
+  public String changePassword(String customerID, String oldPassHash, String newPassHash, String salt) { // Method implemented by M. Christou
     Boolean oldPassCorrect = false;
     Boolean passHashChanged = false;
     try (Statement statement = databaseConnection.createStatement()) {

@@ -1,0 +1,41 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Launch CreateDatabase",
+      "request": "launch",
+      "mainClass": "newbank.server.CreateDatabase",
+      "projectName": "NewBank"
+    },
+    {
+      "type": "java",
+      "name": "Launch Current File",
+      "request": "launch",
+      "mainClass": "${file}"
+    },
+    {
+      "type": "java",
+      "name": "Launch ExampleClient",
+      "request": "launch",
+      "mainClass": "newbank.client.ExampleClient",
+      "projectName": "NewBank"
+    },
+    {
+      "type": "java",
+      "name": "Launch NewBankServer",
+      "request": "launch",
+      "mainClass": "newbank.server.NewBankServer",
+      "projectName": "NewBank"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Compound",
+      "configurations": ["Launch NewBankServer","Launch ExampleClient"]
+    }
+  ]
+}

@@ -82,7 +82,7 @@ public class NewBank {
 		return "FAIL";
 	}
 
-	private String getCurrentSalt(String customerID) {
+	private String getCurrentSalt(String customerID) { // Method implemented by M. Christou
 		try {
 			return dbHandle.getCurrentSalt(customerID);
 		} catch (SQLException e) {
@@ -242,7 +242,7 @@ public class NewBank {
 
 	}
 
-	public String changePassword(String customerID, String oldPassHash, String newPassHash, String salt) {
+	public String changePassword(String customerID, String oldPassHash, String newPassHash, String salt) { // Method implemented by M. Christou
 		return dbHandle.changePassword(customerID, oldPassHash, newPassHash, salt);
 	}
 }

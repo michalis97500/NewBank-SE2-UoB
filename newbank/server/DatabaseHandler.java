@@ -101,7 +101,7 @@ public class DatabaseHandler {
   }
 
   public Boolean accountActive(String account) { // Method implemented by M. Christou
-    return (account == null || account.equals(noaccount) || account.equals("") || account.equals(" "));
+    return (account != null && !account.equals(noaccount) && !account.equals("") && !account.equals(" "));
   }
 
   public Boolean accountExists(String customerID, String accountType) throws SQLException {// Method implemented by M.

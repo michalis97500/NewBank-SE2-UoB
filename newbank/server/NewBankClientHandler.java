@@ -141,6 +141,25 @@ public class NewBankClientHandler extends Thread {
 		}
 	}
 
+	private void microloanSetup() { // Method by H.Chan
+		try {
+			// Set-up for a new microloan.
+			// customer can make available 
+			// a set amount of money with a socially responsible
+			// and reasonable interest rate
+			out.println("Please enter your desired amount for microloan");			
+			Double microloanSum = Double.parseDouble(in.readLine());
+			out.println("Please enter your desired loan period in days");
+			int loanDays = Int.parseInt(in.readLine());
+            out.println("Please enter your desired interest rate");
+			Double interest = Double.parseDouble(in.readLine());
+		} catch (Exception e) {
+			out.println("Error in microloan setup");
+			e.printStackTrace();
+			return error;
+		}
+	}
+
 	private String moveBuilder(String customerID) { // Method by M.Christou
 		String fromaccountType = null;
 		String toaccountType = null;

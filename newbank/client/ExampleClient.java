@@ -35,15 +35,17 @@ public class ExampleClient extends Thread {
 							case "Please enter your current password :":
 							case "Enter Password":
 								salt = bankServerIn.readLine();
+								passwordInput = true;
+								char[] passarray = null;
+								passarray = console.readPassword();
+								passwordInput = false;
 								if (!salt.equals("FAIL") && salt.length() > 5) {
-									passwordInput = true;
-									char[] passarray = null;
-									passarray = console.readPassword();
 									bankServerOut.println(BCrypt.hashpw(new String(passarray), salt));
-									Arrays.fill(passarray, '*');
-									salt = null;
-									passwordInput = false;
+								}else{
+									bankServerOut.println(BCrypt.hashpw(new String(passarray), BCrypt.gensalt()));
 								}
+								Arrays.fill(passarray, '*');
+								salt = null;
 								break;
 							case "Please enter a new password :":
 								passwordInput = true;
@@ -52,7 +54,7 @@ public class ExampleClient extends Thread {
 								String passHashConfirm = null;
 								String passHash = null;
 								while (Boolean.FALSE.equals(goodPass)) {
-									char[] passarray = null;
+									passarray = null;
 									passarray = console.readPassword();
 									if (checkPass(new String(passarray))) {
 										passHash = BCrypt.hashpw(new String(passarray), salt);
@@ -63,8 +65,9 @@ public class ExampleClient extends Thread {
 										System.out.println("Please re-enter a new password :");
 									}
 								}
+								passarray = null;
 								System.out.println("\nPlease confirm the password :");
-								char[] passarray = null;
+								
 								passarray = console.readPassword();
 								passHashConfirm = BCrypt.hashpw(new String(passarray), salt);
 								Arrays.fill(passarray, '*');

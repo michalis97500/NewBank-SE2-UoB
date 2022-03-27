@@ -156,7 +156,6 @@ public class NewBankClientHandler extends Thread {
 		} catch (Exception e) {
 			out.println("Error in microloan setup");
 			e.printStackTrace();
-			return error;
 		}
 	}
 

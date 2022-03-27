@@ -23,7 +23,7 @@ public class NewBank {
 
 	public synchronized String checkLogInDetails(String userName, String password) {
 		try {
-			return dbHandle.checkLogInDetails(userName);
+			return dbHandle.checkLogInDetails(userName, password);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -69,9 +69,9 @@ public class NewBank {
 					case "PAY":
 						return pay(command[1], customerID, command[2]);
 					case "CHANGEPASS":
-						return changePassword(customerID, command[2], command[3]);
-					case "MICROLOAN":
-						return microloan(customerID);
+						return changePassword(customerID, command[2], command[3], command[4]);
+					case "GETCURRENTSALT":
+						return getCurrentSalt(customerID);
 					default:
 						return "FAIL";
 				}
@@ -80,6 +80,15 @@ public class NewBank {
 			e.printStackTrace();
 		}
 		return "FAIL";
+	}
+
+	private String getCurrentSalt(String customerID) { // Method implemented by M. Christou
+		try {
+			return dbHandle.getCurrentSalt(customerID);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	private String showMyAccounts(String customerID) { // Method implemented by M. Christou
@@ -233,7 +242,7 @@ public class NewBank {
 
 	}
 
-	public String changePassword(String customerID, String oldPassHash, String newPassHash){
-		return dbHandle.changePassword(customerID,oldPassHash,newPassHash);
+	public String changePassword(String customerID, String oldPassHash, String newPassHash, String salt) { // Method implemented by M. Christou
+		return dbHandle.changePassword(customerID, oldPassHash, newPassHash, salt);
 	}
 }

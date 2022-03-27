@@ -16,20 +16,20 @@ public class NewBankClientHandler extends Thread {
 	private String error = "INVALID_INPUT";
 	private String cancel = "CANCEL";
 
-	public final void clearScreen(String prompt) {
+	public final void clearScreen(String prompt) { // Method implemented by M. Christou
 		try {
 			out.println("\033[H\033[2J");
 			out.flush();
-			if (prompt!=null){
+			if (prompt != null) {
 				out.println(prompt);
 			}
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	public void mainMenu() {
+	public void mainMenu() { // Method implemented by M. Christou
 		try {
 			out.println("Press any key to return to main menu...");
 			in.read();
@@ -41,43 +41,26 @@ public class NewBankClientHandler extends Thread {
 		}
 	}
 
-	private String hash(char[] characterArrray){
-		return String.valueOf(characterArrray);
-	}
-
-	public String changePassword(String customerID){
+	public String changePassword(String customerID) {// Method implemented by M. Christou
 		try {
 			clearScreen("Please enter your current password :");
+			out.println(getCurrentSalt(customerID));
 			String oldPassHash = in.readLine();
 			clearScreen("Please enter a new password :");
 			String newPassHash = in.readLine();
-			clearScreen("Please re-enter the new password :");
-			String newPassTest = in.readLine();
-			if(newPassHash.equals(oldPassHash)){
-				return "Error : The new password cannot be identical to the old password";
+			if (!newPassHash.contains("__SALT__")) {
+				return error;
 			}
-			if(newPassHash.length() < 8){
-				return "Error : Password minimum length is 8.";
-			}
-			if(!newPassHash.matches("(?=.*[0-9]).*") ){
-				return "Error : Password must contain at least 1 digit";
-			}
-			if(!newPassHash.matches("(?=.*[A-Z]).*") ){
-				return "Error : Password must contain at least 1 uppercase letter";
-			}
-			if(!newPassHash.matches("(?=.*[a-z]).*") ){
-				return "Error : Password must contain at least 1 lowercase letter";
-			}
-			if(!newPassHash.matches("(?=.*[~!@#$%^&*()_-]).*") )
-				return "Error : Password must contain at least 1 special character";
-			if(!newPassHash.equals(newPassTest)){
-				return "Error : Passwords do not match";
-			}
-		return "CHANGEPASS " + customerID + " " + oldPassHash + " " + newPassHash ;
+			String[] split = newPassHash.split(" __SALT__ ");
+			return "CHANGEPASS " + customerID + " " + oldPassHash + " " + split[0] + " " + split[1];
 		} catch (Exception e) {
 			e.printStackTrace();
-			return "Error :";
+			return error;
 		}
+	}
+
+	private String getCurrentSalt(String customerID) {
+		return bank.processRequest(customerID, "GETCURRENTSALT");
 	}
 
 	public NewBankClientHandler(Socket s) throws IOException {
@@ -86,7 +69,7 @@ public class NewBankClientHandler extends Thread {
 		out = new PrintWriter(s.getOutputStream(), true);
 	}
 
-	private void printInterfaceOption() {
+	private void printInterfaceOption() { 
 		// Added by M. Christou
 		out.println("1. Show all accounts inforamtion - SHOWMYACCOUNTS");
 		out.println("2. Create account - NEWACCOUNT <Name>");
@@ -155,20 +138,20 @@ public class NewBankClientHandler extends Thread {
 		Double myBalance = 0.00;
 		String errorString = "";
 		int i = 1;
-	
+
 		// Select account to pay from
-		while(Boolean.FALSE.equals(accountFromBool)){
+		while (Boolean.FALSE.equals(accountFromBool)) {
 			try {
-			out.println("To cancel at any time, please input \"CANCEL\"");
+				out.println("To cancel at any time, please input \"CANCEL\"");
 				responce = bank.processRequest(customerID, "SHOWMYACCOUNTS");
 				accountsFrom = responce.split("\n");
 				accountDisplay = new StringBuilder();
-				for (String account : accountsFrom){
-					accountDisplay.append( Integer.toString(i) + ". " + account + "\n");
+				for (String account : accountsFrom) {
+					accountDisplay.append(Integer.toString(i) + ". " + account + "\n");
 					i++;
 				}
 				out.println(accountDisplay.toString());
-				i=1;
+				i = 1;
 			} catch (Exception e) {
 				out.println("Error in account display, aborting");
 				e.printStackTrace();
@@ -178,10 +161,10 @@ public class NewBankClientHandler extends Thread {
 				out.println("Please select the account to pay from:");
 				String accountSelection = in.readLine();
 				errorString = accountSelection;
-				if(accountSelection.equals(cancel)){
+				if (accountSelection.equals(cancel)) {
 					return error;
 				}
-				if(accountSelection.length() == 1 && accountsFrom != null && accountsFrom.length > 0){
+				if (accountSelection.length() == 1 && accountsFrom != null && accountsFrom.length > 0) {
 					String accountByNumber = accountsFrom[Integer.parseInt(accountSelection) - 1];
 					String[] accountSplit = accountByNumber.split(" ");
 					accountSelection = accountSplit[0];
@@ -189,13 +172,13 @@ public class NewBankClientHandler extends Thread {
 				if (Boolean.TRUE.equals(bank.accountExists(customerID, accountSelection.trim()))) {
 					fromaccountType = accountSelection.trim();
 					myBalance = bank.getAccountBalance(customerID, fromaccountType);
-					if(myBalance > 0){
+					if (myBalance > 0) {
 						out.println("Account " + fromaccountType + " selected. \n");
 						accountFromBool = true;
 					} else {
 						clearScreen("Account " + fromaccountType + " has no balance. Please choose another account.\n");
 					}
-					
+
 				} else {
 					clearScreen("Error, \"" + errorString + "\" is not a valid account, please try again: \n");
 				}
@@ -206,24 +189,24 @@ public class NewBankClientHandler extends Thread {
 		}
 		clearScreen("Account " + fromaccountType + " selected as source of transfer funds. \n");
 		// Select account to pay to
-		while(Boolean.FALSE.equals(accountToBool)){
+		while (Boolean.FALSE.equals(accountToBool)) {
 			try {
-				
-			out.println("To cancel at any time, please input \"CANCEL\"");
+
+				out.println("To cancel at any time, please input \"CANCEL\"");
 				responce = bank.processRequest(customerID, "SHOWMYACCOUNTS");
 				StringBuilder accountDisplay2 = new StringBuilder();
 				String[] accountsToAll = responce.split("\n");
 				accountsTo = new String[accountsToAll.length - 1];
-				for (String account : accountsToAll){
-					if(!account.contains(fromaccountType)){
-						accountDisplay2.append( Integer.toString(i) + ". " + account + "\n");
-						accountsTo[i-1] = account;
+				for (String account : accountsToAll) {
+					if (!account.contains(fromaccountType)) {
+						accountDisplay2.append(Integer.toString(i) + ". " + account + "\n");
+						accountsTo[i - 1] = account;
 						i++;
-						
+
 					}
 				}
 				out.println(accountDisplay2.toString());
-				i=1;
+				i = 1;
 			} catch (Exception e) {
 				out.println("Error in account display, aborting");
 				e.printStackTrace();
@@ -233,10 +216,10 @@ public class NewBankClientHandler extends Thread {
 				out.println("Please select the account to pay to:");
 				String accountSelection = in.readLine();
 				errorString = accountSelection;
-				if(accountSelection.equals(cancel)){
+				if (accountSelection.equals(cancel)) {
 					return error;
 				}
-				if(accountSelection.length() == 1 && accountsTo != null && accountsTo.length > 0){
+				if (accountSelection.length() == 1 && accountsTo != null && accountsTo.length > 0) {
 					String accountByNumber = accountsTo[Integer.parseInt(accountSelection) - 1];
 					String[] accountSplit = accountByNumber.split(" ");
 					accountSelection = accountSplit[0];
@@ -246,26 +229,27 @@ public class NewBankClientHandler extends Thread {
 					out.println("Account " + toaccountType + " selected. \n");
 					accountToBool = true;
 				} else {
-					clearScreen("Error, \"" + errorString + "\" is not a valid account, please try again: \nAccount " + fromaccountType + " selected as source of transfer funds. \n");
+					clearScreen("Error, \"" + errorString + "\" is not a valid account, please try again: \nAccount "
+							+ fromaccountType + " selected as source of transfer funds. \n");
 				}
 			} catch (Exception e) {
-				clearScreen("Error, \"" + errorString + "\" is not a valid account, please try again: \nAccount " + fromaccountType + " selected as source of transfer funds. \n");
+				clearScreen("Error, \"" + errorString + "\" is not a valid account, please try again: \nAccount "
+						+ fromaccountType + " selected as source of transfer funds. \n");
 				e.printStackTrace();
 			}
 		}
 
 		clearScreen("Please enter the amount to move. The available balance is : " + myBalance);
-		while(Boolean.FALSE.equals(amountBool))
-		{
+		while (Boolean.FALSE.equals(amountBool)) {
 			// Get account balance
 			try {
-				
+
 				out.println("To cancel at any time, please input \"CANCEL\"");
 				amount = in.readLine();
 				if (amount == null || amount.isEmpty() || amount.trim().isEmpty()) {
 					clearScreen("No amount entered.\nPlease enter the amount to move. The available balance is : " + myBalance);
 				}
-				if(amount.equals(cancel)){
+				if (amount!=null && amount.equals(cancel)) {
 					return error;
 				}
 			} catch (Exception e) {
@@ -277,25 +261,29 @@ public class NewBankClientHandler extends Thread {
 				Double payment = Double.parseDouble(amount);
 				// check for negative numbers
 				if (payment < 0) {
-					clearScreen("Amount must be greater than 0.00.\nPlease enter the amount to move. The available balance is : " + myBalance);
+					clearScreen("Amount must be greater than 0.00.\nPlease enter the amount to move. The available balance is : "
+							+ myBalance);
 				}
-				if(payment > 0 ){
+				if (payment > 0) {
 					amountBool = true;
 				}
-				
+
 			} catch (NumberFormatException e) {
-				clearScreen("Invalid format, please use numbers only.\nPlease enter the amount to move. The available balance is : " + myBalance);
+				clearScreen(
+						"Invalid format, please use numbers only.\nPlease enter the amount to move. The available balance is : "
+								+ myBalance);
 			}
 		}
-		
+
 		if (fromaccountType != null && toaccountType != null) {
-			clearScreen("Confirm transfer of $" +  amount + " from account \"" + fromaccountType + "\" to account \"" + toaccountType + "\"");
+			clearScreen("Confirm transfer of $" + amount + " from account \"" + fromaccountType + "\" to account \""
+					+ toaccountType + "\"");
 			out.println("1. Confirm");
 			out.println("2. Reject");
 			String confirmation;
 			try {
 				confirmation = in.readLine();
-				switch (confirmation){
+				switch (confirmation) {
 					case "1":
 					case "Confirm":
 					case "Yes":
@@ -303,11 +291,11 @@ public class NewBankClientHandler extends Thread {
 					default:
 						out.println("Action has been cancelled");
 						return error;
-			}
-		 } catch (IOException e) {
+				}
+			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			
+
 		}
 		return error;
 	}
@@ -325,7 +313,7 @@ public class NewBankClientHandler extends Thread {
 				out.println("Beneficiary is empty, aborting.");
 				return error;
 			}
-			if(beneficiary.equals(cancel)){
+			if (beneficiary.equals(cancel)) {
 				out.println("Cancelling...");
 				return error;
 			}
@@ -348,7 +336,7 @@ public class NewBankClientHandler extends Thread {
 				out.println("No amount entered, aborting.");
 				return error;
 			}
-			if(amount.equals(cancel)){
+			if (amount.equals(cancel)) {
 				out.println("Cancelling...");
 				return error;
 			}
@@ -371,26 +359,26 @@ public class NewBankClientHandler extends Thread {
 			return error;
 		}
 
-		clearScreen("Confirm transfer of $" +  amount + " from Main account to beneficiary \"" + beneficiary + "\"");
+		clearScreen("Confirm transfer of $" + amount + " from Main account to beneficiary \"" + beneficiary + "\"");
 		out.println("1. Confirm");
 		out.println("2. Reject");
 		String confirmation;
 		try {
 			confirmation = in.readLine();
-			switch (confirmation){
+			switch (confirmation) {
 				case "1":
 				case "Confirm":
 				case "Yes":
-				return "PAY " + beneficiary + " " + amount;
+					return "PAY " + beneficiary + " " + amount;
 				default:
 					out.println("Action has been cancelled");
 					return error;
-		}
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 			return error;
 		}
-		
+
 	}
 
 	@Override
@@ -402,6 +390,7 @@ public class NewBankClientHandler extends Thread {
 			String userName = in.readLine();
 			// ask for password
 			out.println("Enter Password");
+			out.println(getCurrentSalt(bank.getCustomerID(userName)));
 			String password = in.readLine();
 			out.println("Checking Details...");
 			// authenticate user and get customer ID token from bank for use in subsequent
@@ -463,13 +452,13 @@ public class NewBankClientHandler extends Thread {
 							break;
 						case "6":
 						case "Exit":
-								out.println("CLIENT_CLOSE_COMMAND");
-								break;
+							out.println("CLIENT_CLOSE_COMMAND");
+							break;
 						case "7":
 							request = changePassword(customerID);
-							if (request.startsWith("Error : ")){
+							if (request.equals(error)) {
 								validCommand = false;
-								out.println(request);
+								out.println("Password has not been changed.");
 								mainMenu();
 							}
 							break;

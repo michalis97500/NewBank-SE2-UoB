@@ -461,6 +461,33 @@ public class NewBankClientHandler extends Thread {
 	 
 }
 
+private String getMicroloan(String customerID) { // Method by H. Chan
+	try {
+		// Set-up for a new microloan.
+		// customer can make available 
+		// a set amount of money with a socially responsible
+		// and reasonable interest rate
+		out.println("Please enter your desired amount for microloan");			
+		String microloanSum = in.readLine();
+					if (Double.parseDouble(microloanSum) < 0) {
+			clearScreen("Loan amount must be greater than 0.00.\nPlease enter a correct loan amount request.");
+		}
+		out.println("Please enter your desired loan period in days");
+		String loanDays = in.readLine();
+		if (Integer.parseInt(microloanSum) < 0) {
+			clearScreen("Loan period must be greater than 0.\nPlease enter a valid loan period.");
+		}
+		out.println("Your requested microloan details: Loan Amount: " + microloanSum + " for " + loanDays + " days.");
+		String loanDetails = "S" + microloanSum + "D" + loanDays;
+		// Will return a string to be thrown for further handling.
+		return loanDetails;
+	} catch (Exception e) {
+		out.println("Error in microloan setup");
+		e.printStackTrace();
+		return "ERROR";
+	}
+}
+
 	@Override
 	public void run() { // Method modified by M.Christou for better UX
 		// keep getting requests from the client and processing them

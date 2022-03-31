@@ -84,11 +84,6 @@ public class NewBank {
 		}
 		return "FAIL";
 	}
-	
-	
-	private String reqLoan(String customerID, String string, String string2) {
-		return null;
-	}
 
 	private String getCurrentSalt(String customerID) { // Method implemented by M. Christou
 		try {

@@ -54,6 +54,7 @@ public class NewBank {
 	// commands from the NewBank customer are processed in this method
 	public synchronized String processRequest(String customerID, String request) {
 		String[] command = request.split(" ");
+		System.out.println("abaa");
 		try {
 			if (dbHandle.customerExists(customerID)) {
 				switch (command[0]) {
@@ -72,6 +73,8 @@ public class NewBank {
 						return changePassword(customerID, command[2], command[3], command[4]);
 					case "GETCURRENTSALT":
 						return getCurrentSalt(customerID);
+					case "REQLOAN": 							//ycanli
+						return getLoanAvailable(customerID);
 					default:
 						return "FAIL";
 				}
@@ -81,6 +84,11 @@ public class NewBank {
 		}
 		return "FAIL";
 	}
+	
+	
+	private String reqLoan(String customerID, String string, String string2) {
+		return null;
+	}
 
 	private String getCurrentSalt(String customerID) { // Method implemented by M. Christou
 		try {
@@ -89,6 +97,28 @@ public class NewBank {
 			e.printStackTrace();
 			return null;
 		}
+	}
+
+	private String getLoanAvailable(String customerID) { // Method implemented by ycanli
+		try {
+			return dbHandle.getLoanAvailable(customerID);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	public String getLoanScore(String customerID) { // Method implemented by ycanli
+		try {
+			return dbHandle.getLoanScore(customerID);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	public String setLoanAmount(String customerID,String loanAmount,String startType) { // Method implemented by ycanli
+		return dbHandle.setLoanAmount(customerID,loanAmount,startType);
 	}
 
 	private String showMyAccounts(String customerID) { // Method implemented by M. Christou

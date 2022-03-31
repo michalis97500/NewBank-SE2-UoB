@@ -75,7 +75,7 @@ public class NewBankClientHandler extends Thread {
 		out.println("2. Create account - NEWACCOUNT <Name>");
 		out.println("3. Pay person/entity - PAY <Entity> <Ammount>");
 		out.println("4. Transfer funds between accounts - MOVE <Amount> <From> <To>");
-		out.println("5. Apply for a microloan");
+		out.println("5. Loan request"); //ycanli
 		out.println("6. Logout");
 		out.println("7. Exit");
 		out.println("8. Change password");
@@ -89,7 +89,8 @@ public class NewBankClientHandler extends Thread {
 			out.println("1. Savings account");
 			out.println("2. Checking account");
 			out.println("3. Main account");
-			out.println("4. Cancel and return to main menu");
+			out.println("4. Loan account");  //yc
+			out.println("5. Cancel and return to main menu");
 			String accountType = in.readLine();
 			switch (accountType) {
 				case "1":
@@ -101,6 +102,9 @@ public class NewBankClientHandler extends Thread {
 				case "3":
 					accountType = "Main";
 					break;
+				case "4":
+					accountType = "Loan";
+					break;
 				case "Main":
 					accountType = "Main";
 					break;
@@ -110,7 +114,10 @@ public class NewBankClientHandler extends Thread {
 				case "Checking":
 					accountType = checkings;
 					break;
-				case "4":
+				case "Loan":
+					accountType = "Loan";
+					break;
+				case "5":
 				case "Cancel":
 					return "SYSTEM_CANCEL";
 				default:
@@ -382,32 +389,77 @@ public class NewBankClientHandler extends Thread {
 
 	}
 
-	private String getMicroloan(String customerID) { // Method by H. Chan
-		try {
-			// Set-up for a new microloan.
-			// customer can make available 
-			// a set amount of money with a socially responsible
-			// and reasonable interest rate
-			out.println("Please enter your desired amount for microloan");			
-			String microloanSum = in.readLine();
-            if (Double.parseDouble(microloanSum) < 0) {
-				clearScreen("Loan amount must be greater than 0.00.\nPlease enter a correct loan amount request.");
-			}
-			out.println("Please enter your desired loan period in days");
-			String loanDays = in.readLine();
-			if (Integer.parseInt(microloanSum) < 0) {
-				clearScreen("Loan period must be greater than 0.\nPlease enter a valid loan period.");
-			}
-			out.println("Your requested microloan details: Loan Amount: " + microloanSum + " for " + loanDays + " days.");
-			String loanDetails = "S" + microloanSum + "D" + loanDays;
-			// Will return a string to be thrown for further handling.
-			return loanDetails;
-		} catch (Exception e) {
-			out.println("Error in microloan setup");
-			e.printStackTrace();
-			return "ERROR";
+	public String processLoan(String customerID)   //ycanli
+	{
+     String returnMessage = "";
+	 try
+	 {
+		String loanScore = "";
+		String loanAvl = bank.processRequest(customerID,"REQLOAN");
+		Double loanAvlDouble = Double.parseDouble(loanAvl);
+
+		if(loanAvlDouble > 0)
+		{
+			returnMessage = "DECLINED. Because, you have a loan account available..";
 		}
-	}
+		else
+		{
+			loanScore = bank.getLoanScore(customerID);
+			Integer loanScoreInteger = Integer.parseInt(loanScore);
+			if(loanScoreInteger>70)
+			{
+				//returnMessage = "Your score is: " +loanScoreInteger+" Newbank shall be met your loan request in a short time..";
+				out.println("Your score is: " +loanScoreInteger);
+				out.println("Newbank shall be met your loan request in a short time..");	
+				out.println("Please enter your request for Loan Amount: ");
+				String loanAmount = in.readLine();
+				returnMessage = bank.setLoanAmount(customerID,loanAmount,"REQUEST"); 
+
+				if(returnMessage.equals("OK"))
+				{
+					out.println("Your request has been taken and recorded to the system. If you approve it, it will be transferred to your account.");	
+					out.println("Press 'Y' to confirm..");
+
+					String approvalReturn = in.readLine();
+					if(approvalReturn.equals("Y"))
+					{
+						returnMessage = bank.setLoanAmount(customerID, loanAmount,"APPROVAL"); 	
+						if(returnMessage.equals("OK"))
+						{
+							out.println("Your money will be transferred..");
+							returnMessage = "Check your accont from the main menu / 1. Show all accounts inforamtion";
+							return returnMessage;	
+						}
+						else
+						{
+							out.println("onay sürecind e hara aldı");	
+						}
+					}
+					else
+					{
+						out.println("Exiting the request process");	
+						returnMessage = "Exited during approval phase";
+						return returnMessage;
+					}
+				}
+
+				return returnMessage;
+			}
+			else
+			{
+				returnMessage = "DECLINED..";
+			}
+		}
+
+		 return returnMessage;
+	 }
+	 catch (IOException e)
+	 {
+		e.printStackTrace();
+		return returnMessage;
+	 }
+	 
+}
 
 	@Override
 	public void run() { // Method modified by M.Christou for better UX
@@ -473,19 +525,18 @@ public class NewBankClientHandler extends Thread {
 							}
 							break;
 						case "5":
+						case "Loan":
 							clearScreen(null);
-							request = getMicroloan(customerID);
-							if (request.equals(error)) {
-								validCommand = false;
-								mainMenu();
-							}
+							String returnProcess = processLoan(customerID);
+							out.println(returnProcess);
 							break;
-						case "6":
+							case "6":
 						case "Logout":
 							clearScreen(null);
 							Thread.currentThread().interrupt();
 							run();
 							break;
+
 						case "7":
 						case "Exit":
 							out.println("CLIENT_CLOSE_COMMAND");
@@ -493,7 +544,7 @@ public class NewBankClientHandler extends Thread {
 						case "8":
 							request = changePassword(customerID);
 							if (request.equals(error)) {
-								validCommand = false;
+								validCommand =false;
 								out.println("Password has not been changed.");
 								mainMenu();
 							}

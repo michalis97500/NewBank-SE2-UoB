@@ -8,9 +8,13 @@ public class DatabaseHandler {
   private static String main = "Main";
   private static String savings = "Savings";
   private static String checking = "Checking";
+  private static String loan = "avail_loan_amount";
   private static String accountTable = "Account_Table";
+  private static String loanTable = "Loan_Table";  //Ycanli string for loan_table
   private static String updateAllAccountInfo = "INSERT INTO " + accountTable
       + "(id, username, passhash, salt, name, Main, Savings, Checking) VALUES(?, ?, ?, ?, ?, ?, ?, ?)";
+  private static String updateAllLoanInfo = "INSERT INTO " + loanTable   //ycanli
+      + "(loan_id, req_loan_amount, avail_loan_amount, score, id, usernamme) VALUES (?, ?, ?, ?, ?, ?)";
 
   public Boolean connectDatabase() throws SQLException { // Method implemented by M.Christou
     try {
@@ -49,6 +53,18 @@ public class DatabaseHandler {
           + ");";
       tablecreation.execute(accountHeaders);
       System.out.println("Account_Table has been created or it already exists");
+
+      String LoanHeaders = "CREATE TABLE IF NOT EXISTS " + accountTable + " (\n"  //ycanli
+      + "Loan_id varchar(8) PRIMARY KEY,\n"
+      + "req_loan_amount string NOT NULL,\n"
+      + "avail_loan_amount string NOT NULL,\n"
+      + "score NOT NULL,\n"
+      + "id NOT NULL,\n"
+      + "username text,\n"
+      + ");";
+    tablecreation.execute(LoanHeaders);
+    System.out.println("Account_Table has been created or it already exists");
+
     } catch (Exception e) {
       System.out.println("Account_Table cannot be created");
       e.printStackTrace();
@@ -82,6 +98,63 @@ public class DatabaseHandler {
       e.printStackTrace();
     }
   }
+
+public String setLoanAmount(String customerID,String loanAmount,String startType)  //Ycanli - For request and approval has written two paramters. Instead of method I used.
+{
+  if(startType.equals("REQUEST"))
+  {
+      try (PreparedStatement ps = this.databaseConnection.prepareStatement(
+        "UPDATE " + loanTable + " SET req_loan_amount ='" + loanAmount + "' WHERE id = " + customerID)) 
+        {
+        ps.executeUpdate();
+        return "OK";
+    } catch (Exception e) {
+      e.printStackTrace();
+      return "FAIL";
+    }
+  }
+  else if(startType.equals("APPROVAL"))
+  {
+    try (PreparedStatement ps = this.databaseConnection.prepareStatement(
+      "UPDATE " + loanTable + " SET avail_loan_amount ='" + loanAmount + "' WHERE id = " + customerID)) 
+      {
+      ps.executeUpdate();
+      return "OK";
+  } catch (Exception e) {
+    e.printStackTrace();
+    return "FAIL";
+  }
+  }
+
+  return "FAILED";
+  }
+
+//ycanli update loan_table
+  public void updateLoantInfo(String Loan_id, String req_loan_amount_avail, String score, String id,
+  String avail_loan_amount, String username ) { // Method implemented by ycanli
+try (PreparedStatement ps = this.databaseConnection.prepareStatement(updateAllLoanInfo)) {
+  ps.setString(1, Loan_id);
+  ps.setString(2, req_loan_amount_avail);
+  ps.setString(3, avail_loan_amount);
+  ps.setString(4, score);
+  ps.setString(5, id);
+  ps.setString(6, username);
+  ps.executeUpdate();
+  System.out.println("Table account_info updated, new values added: ");
+  System.out
+      .print(Loan_id + "\t" + req_loan_amount_avail + "\t" + avail_loan_amount + "\t" + score + "\t" + id + "\t" + username + "\t"
+      );
+  System.out.println();
+
+} catch (SQLException e) {
+  System.out.println("Table account_info NOT updated, new values NOT added");
+  System.out
+      .print(Loan_id + "\t" + req_loan_amount_avail + "\t" + avail_loan_amount + "\t" + score + "\t" + id + "\t" + username + "\t"
+      );
+  System.out.println();
+  e.printStackTrace();
+}
+}
 
   public Boolean setCustomerAccountBalance(String customerID, String accountType, String amount) throws SQLException { // Method
                                                                                                                        // implemented
@@ -138,7 +211,11 @@ public class DatabaseHandler {
     String mainBalance = null;
     String checkingBalance = null;
     String savingsBalance = null;
-
+    String loanBalance = null;
+    /* yc
+    */
+  
+    
     // Get accounts from database
     try {
       String idAndBalances = "SELECT id, Main, Savings, Checking FROM " + accountTable;
@@ -158,6 +235,23 @@ public class DatabaseHandler {
       statement.close();
     }
 
+      // Get loan_amount from database
+      try {
+        String idAndBalances = "SELECT id, avail_loan_amount FROM " + loanTable;
+        ResultSet results = statement.executeQuery(idAndBalances);
+        while (results.next()) {
+          if (customerID.equals(results.getString("id"))) { // if we are here that means we have the correct customer
+            loanBalance = results.getString(loan);
+            break;
+          }
+        }
+      } catch (Exception e) {
+        e.printStackTrace();
+        return "No database connection";
+      } finally {
+        statement.close();
+      }
+
     // Put accounts in a string to return
     StringBuilder accounts = new StringBuilder();
     try {
@@ -170,6 +264,7 @@ public class DatabaseHandler {
       if (Boolean.TRUE.equals(accountActive(savingsBalance))) {
         accounts.append("Savings : $" + savingsBalance + "\n");
       }
+      accounts.append("Loan : $" + loanBalance + "\n");
       return accounts.toString();
     } catch (Exception e) {
       e.printStackTrace();
@@ -264,13 +359,53 @@ public class DatabaseHandler {
     }
   }
 
+  public String getLoanAvailable(String customerID) throws SQLException {// Method implemented by M. Christou
+    Statement statement = databaseConnection.createStatement();
+    try {
+      String idAndSalt = "SELECT id, avail_loan_amount FROM " + loanTable;
+      ResultSet results = statement.executeQuery(idAndSalt);
+      while (results.next()) {
+        if (customerID.equals(results.getString("id"))) { // if we are here that means we have the correct customer
+          return results.getString("avail_loan_amount");
+        }
+      }
+      return null;
+    } catch (Exception e) {
+      e.printStackTrace();
+      return null;
+    } finally {
+      statement.close();
+    }
+  }
+
+  public String getLoanScore(String customerID) throws SQLException {// Method implemented by M. Christou
+    Statement statement = databaseConnection.createStatement();
+    try {
+      String idAndSalt = "SELECT id, score FROM " + loanTable;
+      ResultSet results = statement.executeQuery(idAndSalt);
+      while (results.next()) {
+        if (customerID.equals(results.getString("id"))) { // if we are here that means we have the correct customer
+          return results.getString("score");
+        }
+      }
+      return null;
+    } catch (Exception e) {
+      e.printStackTrace();
+      return null;
+    } finally {
+      statement.close();
+    }
+  }
+
   public String createAccount(String customerID, String accountType) throws SQLException {// Method implemented by M.
                                                                                           // Christou
     try (Statement statement = databaseConnection.createStatement()) {
-      if (accountType.equals(main) || accountType.equals(checking) || accountType.equals(savings)) {
+      if (accountType.equals(main) || accountType.equals(checking) || accountType.equals(savings)) 
+      {
         String idAndAccount = "SELECT id, " + accountType + " FROM " + accountTable;
         ResultSet results = statement.executeQuery(idAndAccount);
-        while (results.next()) {
+        while (results.next()) 
+        {
           if (results.getString("id").equals(customerID)) {
             Boolean setBalance = setCustomerAccountBalance(customerID, accountType, "0.00");
             if (Boolean.TRUE.equals(setBalance)) {

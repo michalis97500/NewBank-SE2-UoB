@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+//import java.sql.SQLException;
 
 public class NewBankClientHandler extends Thread {
 
@@ -75,7 +76,7 @@ public class NewBankClientHandler extends Thread {
 		out.println("2. Create account - NEWACCOUNT <Name>");
 		out.println("3. Pay person/entity - PAY <Entity> <Ammount>");
 		out.println("4. Transfer funds between accounts - MOVE <Amount> <From> <To>");
-		out.println("5. Loan request"); //ycanli
+		out.println("5. Loan request"); //added by ycanli
 		out.println("6. Logout");
 		out.println("7. Exit");
 		out.println("8. Change password");
@@ -459,33 +460,6 @@ public class NewBankClientHandler extends Thread {
 		return returnMessage;
 	 }
 	 
-}
-
-private String getMicroloan(String customerID) { // Method by H. Chan
-	try {
-		// Set-up for a new microloan.
-		// customer can make available 
-		// a set amount of money with a socially responsible
-		// and reasonable interest rate
-		out.println("Please enter your desired amount for microloan");			
-		String microloanSum = in.readLine();
-					if (Double.parseDouble(microloanSum) < 0) {
-			clearScreen("Loan amount must be greater than 0.00.\nPlease enter a correct loan amount request.");
-		}
-		out.println("Please enter your desired loan period in days");
-		String loanDays = in.readLine();
-		if (Integer.parseInt(microloanSum) < 0) {
-			clearScreen("Loan period must be greater than 0.\nPlease enter a valid loan period.");
-		}
-		out.println("Your requested microloan details: Loan Amount: " + microloanSum + " for " + loanDays + " days.");
-		String loanDetails = "S" + microloanSum + "D" + loanDays;
-		// Will return a string to be thrown for further handling.
-		return loanDetails;
-	} catch (Exception e) {
-		out.println("Error in microloan setup");
-		e.printStackTrace();
-		return "ERROR";
-	}
 }
 
 	@Override

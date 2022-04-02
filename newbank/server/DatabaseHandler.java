@@ -99,7 +99,8 @@ public class DatabaseHandler {
     }
   }
 
-public String setLoanAmount(String customerID,String loanAmount,String startType)  //Ycanli - For request and approval has written two paramters. Instead of method I used.
+public String setLoanAmount(String customerID,String loanAmount,String startType)  //Ycanli - For request and approval has written two paramters. Instead of 
+                                                                                   // new method I used.
 {
   if(startType.equals("REQUEST"))
   {
@@ -130,7 +131,7 @@ public String setLoanAmount(String customerID,String loanAmount,String startType
   }
 
 //ycanli update loan_table
-  public void updateLoantInfo(String Loan_id, String req_loan_amount_avail, String score, String id,
+  public void updateLoanInfo(String Loan_id, String req_loan_amount_avail, String score, String id,
   String avail_loan_amount, String username ) { // Method implemented by ycanli
 try (PreparedStatement ps = this.databaseConnection.prepareStatement(updateAllLoanInfo)) {
   ps.setString(1, Loan_id);
@@ -140,14 +141,14 @@ try (PreparedStatement ps = this.databaseConnection.prepareStatement(updateAllLo
   ps.setString(5, id);
   ps.setString(6, username);
   ps.executeUpdate();
-  System.out.println("Table account_info updated, new values added: ");
+  System.out.println("Loan amount info updated, new values added: ");
   System.out
       .print(Loan_id + "\t" + req_loan_amount_avail + "\t" + avail_loan_amount + "\t" + score + "\t" + id + "\t" + username + "\t"
       );
   System.out.println();
 
 } catch (SQLException e) {
-  System.out.println("Table account_info NOT updated, new values NOT added");
+  System.out.println("Loan amount info NOT updated, new values NOT added");
   System.out
       .print(Loan_id + "\t" + req_loan_amount_avail + "\t" + avail_loan_amount + "\t" + score + "\t" + id + "\t" + username + "\t"
       );
@@ -212,8 +213,7 @@ try (PreparedStatement ps = this.databaseConnection.prepareStatement(updateAllLo
     String checkingBalance = null;
     String savingsBalance = null;
     String loanBalance = null;
-    /* yc
-    */
+  
   
     
     // Get accounts from database
@@ -235,12 +235,12 @@ try (PreparedStatement ps = this.databaseConnection.prepareStatement(updateAllLo
       statement.close();
     }
 
-      // Get loan_amount from database
+      // Get loan_amount from database - ycanli
       try {
-        String idAndBalances = "SELECT id, avail_loan_amount FROM " + loanTable;
-        ResultSet results = statement.executeQuery(idAndBalances);
+        String idAndAmount= "SELECT id, avail_loan_amount FROM " + loanTable;
+        ResultSet results = statement.executeQuery(idAndAmount);
         while (results.next()) {
-          if (customerID.equals(results.getString("id"))) { // if we are here that means we have the correct customer
+          if (customerID.equals(results.getString("id"))) { // if we are here that means we have the correct loan_amount
             loanBalance = results.getString(loan);
             break;
           }
@@ -359,13 +359,13 @@ try (PreparedStatement ps = this.databaseConnection.prepareStatement(updateAllLo
     }
   }
 
-  public String getLoanAvailable(String customerID) throws SQLException {// Method implemented by M. Christou
+  public String getLoanAvailable(String customerID) throws SQLException {// Method implemented by ycanli
     Statement statement = databaseConnection.createStatement();
     try {
-      String idAndSalt = "SELECT id, avail_loan_amount FROM " + loanTable;
-      ResultSet results = statement.executeQuery(idAndSalt);
+      String idAndLoan = "SELECT id, avail_loan_amount FROM " + loanTable;
+      ResultSet results = statement.executeQuery(idAndLoan);
       while (results.next()) {
-        if (customerID.equals(results.getString("id"))) { // if we are here that means we have the correct customer
+        if (customerID.equals(results.getString("id"))) { // if we are here that means we have the correct loan
           return results.getString("avail_loan_amount");
         }
       }
@@ -378,13 +378,13 @@ try (PreparedStatement ps = this.databaseConnection.prepareStatement(updateAllLo
     }
   }
 
-  public String getLoanScore(String customerID) throws SQLException {// Method implemented by M. Christou
+  public String getLoanScore(String customerID) throws SQLException {// Method implemented by ycanli
     Statement statement = databaseConnection.createStatement();
     try {
-      String idAndSalt = "SELECT id, score FROM " + loanTable;
-      ResultSet results = statement.executeQuery(idAndSalt);
+      String idAndLoan = "SELECT id, score FROM " + loanTable;
+      ResultSet results = statement.executeQuery(idAndLoan);
       while (results.next()) {
-        if (customerID.equals(results.getString("id"))) { // if we are here that means we have the correct customer
+        if (customerID.equals(results.getString("id"))) { // if we are here that means we have the correct score
           return results.getString("score");
         }
       }

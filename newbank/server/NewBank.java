@@ -73,7 +73,7 @@ public class NewBank {
 						return changePassword(customerID, command[2], command[3], command[4]);
 					case "GETCURRENTSALT":
 						return getCurrentSalt(customerID);
-					case "REQLOAN": 							//ycanli
+					case "REQLOAN": 							//added by ycanli
 						return getLoanAvailable(customerID);
 					default:
 						return "FAIL";
@@ -84,7 +84,8 @@ public class NewBank {
 		}
 		return "FAIL";
 	}
-
+	
+	
 	private String getCurrentSalt(String customerID) { // Method implemented by M. Christou
 		try {
 			return dbHandle.getCurrentSalt(customerID);

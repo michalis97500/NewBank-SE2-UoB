@@ -69,13 +69,13 @@ public class NewBankClientHandler extends Thread {
 		out = new PrintWriter(s.getOutputStream(), true);
 	}
 
-	private void printInterfaceOption() { 
+	private void printInterfaceOption() {
 		// Added by M. Christou
 		out.println("1. Show all accounts inforamtion - SHOWMYACCOUNTS");
 		out.println("2. Create account - NEWACCOUNT <Name>");
 		out.println("3. Pay person/entity - PAY <Entity> <Ammount>");
 		out.println("4. Transfer funds between accounts - MOVE <Amount> <From> <To>");
-		out.println("5. Loan request"); //added by ycanli
+		out.println("5. Loan request"); // added by ycanli
 		out.println("6. Logout");
 		out.println("7. Exit");
 		out.println("8. Change password");
@@ -89,7 +89,7 @@ public class NewBankClientHandler extends Thread {
 			out.println("1. Savings account");
 			out.println("2. Checking account");
 			out.println("3. Main account");
-			out.println("4. Loan account");  //yc
+			out.println("4. Loan account"); // yc
 			out.println("5. Cancel and return to main menu");
 			String accountType = in.readLine();
 			switch (accountType) {
@@ -251,7 +251,7 @@ public class NewBankClientHandler extends Thread {
 				if (amount == null || amount.isEmpty() || amount.trim().isEmpty()) {
 					clearScreen("No amount entered.\nPlease enter the amount to move. The available balance is : " + myBalance);
 				}
-				if (amount!=null && amount.equalsIgnoreCase(cancel)) {
+				if (amount != null && amount.equalsIgnoreCase(cancel)) {
 					return error;
 				}
 			} catch (Exception e) {
@@ -383,76 +383,13 @@ public class NewBankClientHandler extends Thread {
 
 	}
 
-	public String processLoan(String customerID)   //YCanli + M.Christou
+	public String processLoan(String customerID) // YCanli + M.Christou
 	{
-<<<<<<< HEAD
-		System.out.println("You are applying for a loan of $" + loanAmount + " repayable in " + loanPeriodDays + " days. The interest rate is " + 
-		interestRate + "%. Total amount repayable is : " +  payable);
-		
-=======
-     String returnMessage = "";
-	 try
-	 {
-		String loanScore = "";
-		String loanAvl = bank.processRequest(customerID,"REQLOAN");
-		Double loanAvlDouble = Double.parseDouble(loanAvl);
+		System.out.println("You are applying for a loan of $" + loanAmount + " repayable in " + loanPeriodDays
+				+ " days. The interest rate is " +
+				interestRate + "%. Total amount repayable is : " + payable);
 
-		if(loanAvlDouble > 0)
-		{
-			returnMessage = "DECLINED. Because, you have a loan account available..";
-		}
-		else
-		{
-			loanScore = bank.getLoanScore(customerID);
-			Integer loanScoreInteger = Integer.parseInt(loanScore);
-			if(loanScoreInteger>70)
-			{
-				//returnMessage = "Your score is: " +loanScoreInteger+" Newbank shall be met your loan request in a short time..";
-				out.println("Your score is: " +loanScoreInteger);
-				out.println("Newbank shall be met your loan request in a short time..");	
-				out.println("Please enter your request for Loan Amount: ");
-				String loanAmount = in.readLine();
-				returnMessage = bank.setLoanAmount(customerID,loanAmount,"REQUEST"); 
-
-				if(returnMessage.equals("OK"))
-				{
-					out.println("Your request has been taken and recorded to the system. If you approve it, it will be transferred to your account.");	
-					out.println("Press 'Y' to confirm..");
-
-					String approvalReturn = in.readLine();
-					if(approvalReturn.equals("Y"))
-					{
-						returnMessage = bank.setLoanAmount(customerID, loanAmount,"APPROVAL"); 	
-						if(returnMessage.equals("OK"))
-						{
-							out.println("Your money will be transferred..");
-							returnMessage = "Check your accont from the main menu / 1. Show all accounts inforamtion";
-							return returnMessage;	
-						}
-						else
-						{
-							out.println("Received an error in the approval process..");	
-						}
-					}
-					else
-					{
-						out.println("Exiting the request process");	
-						returnMessage = "Exited during approval phase";
-						return returnMessage;
-					}
-				}
-
-				return returnMessage;
-			}
-			else
-			{
-				returnMessage = "DECLINED..";
-			}
-		}
-
-		 return returnMessage;
->>>>>>> 55a78f7a16d6d0ef64bdd924745e8fdaf693d683
-	 }
+	}
 
 	@Override
 	public void run() { // Method modified by M.Christou for better UX
@@ -523,7 +460,7 @@ public class NewBankClientHandler extends Thread {
 							String returnProcess = processLoan(customerID);
 							out.println(returnProcess);
 							break;
-							case "6":
+						case "6":
 						case "Logout":
 							clearScreen(null);
 							Thread.currentThread().interrupt();
@@ -537,7 +474,7 @@ public class NewBankClientHandler extends Thread {
 						case "8":
 							request = changePassword(customerID);
 							if (request.equals(error)) {
-								validCommand =false;
+								validCommand = false;
 								out.println("Password has not been changed.");
 								mainMenu();
 							}

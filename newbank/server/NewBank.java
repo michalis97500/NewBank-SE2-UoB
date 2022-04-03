@@ -76,7 +76,7 @@ public class NewBank {
 						return changePassword(customerID, command[2], command[3], command[4]);
 					case "GETCURRENTSALT":
 						return getCurrentSalt(customerID);
-					case "LOAN": 	//Y.Canli + M.Christou
+					case "LOAN": // Y.Canli + M.Christou
 						return newLoan(customerID, command[1], command[2]);
 					default:
 						return "FAIL";
@@ -87,8 +87,7 @@ public class NewBank {
 		}
 		return "FAIL";
 	}
-	
-	
+
 	private String getCurrentSalt(String customerID) { // Method implemented by M. Christou
 		try {
 			return dbHandle.getCurrentSalt(customerID);
@@ -97,7 +96,6 @@ public class NewBank {
 			return null;
 		}
 	}
-
 
 	private String showMyAccounts(String customerID) { // Method implemented by M. Christou
 		try {
@@ -250,37 +248,41 @@ public class NewBank {
 
 	}
 
-	public String changePassword(String customerID, String oldPassHash, String newPassHash, String salt) { // Method implemented by M. Christou
+	public String changePassword(String customerID, String oldPassHash, String newPassHash, String salt) { // Method
+																																																					// implemented
+																																																					// by M.
+																																																					// Christou
 		return dbHandle.changePassword(customerID, oldPassHash, newPassHash, salt);
 	}
 
-	public String newLoan(String customerID, String loanAmount, String loanPeriodDays){
+	public String newLoan(String customerID, String loanAmount, String loanPeriodDays) {
 
-		//Check if user is eligible for loan.
-		try{
-			if(Boolean.TRUE.equals(dbHandle.customerHasActiveLoan(customerID))){
+		// Check if user is eligible for loan.
+		try {
+			if (Boolean.TRUE.equals(dbHandle.customerHasActiveLoan(customerID))) {
 				return "Error : You already have an active loan.";
 			}
 			int creditscore = Integer.parseInt(dbHandle.getCreditScore(customerID));
-			if(creditscore <= 60 ){
+			if (creditscore <= 60) {
 				return "Error : Your credit score is " + creditscore + ". The minimum score is " + minCreditScore;
 			}
 
-		}catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			return "Error: Please contact the bank with error code L-001";
 		}
 
-		//Confirm with the user the terms of loan
+		// Confirm with the user the terms of loan
 		Double interestRate = 20.0;
-		if(Integer.parseInt(loanPeriodDays) <= Integer.parseInt(lowInterestPeriod)){
+		if (Integer.parseInt(loanPeriodDays) <= Integer.parseInt(lowInterestPeriod)) {
 			interestRate = 15.0;
 		}
-		Double payable = Double.parseDouble(loanAmount)* (1+interestRate/100);
+		Double payable = Double.parseDouble(loanAmount) * (1 + interestRate / 100);
 
 		try {
 			String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
-			if(Boolean.TRUE.equals(dbHandle.createLoan(customerID, timeStamp, loanAmount, payable.toString(), "0", "ACTIVE"))){
+			if (Boolean.TRUE
+					.equals(dbHandle.createLoan(customerID, timeStamp, loanAmount, payable.toString(), "0", "ACTIVE"))) {
 				return "SUCCESS";
 			}
 		} catch (Exception e) {

@@ -385,9 +385,73 @@ public class NewBankClientHandler extends Thread {
 
 	public String processLoan(String customerID)   //YCanli + M.Christou
 	{
+<<<<<<< HEAD
 		System.out.println("You are applying for a loan of $" + loanAmount + " repayable in " + loanPeriodDays + " days. The interest rate is " + 
 		interestRate + "%. Total amount repayable is : " +  payable);
 		
+=======
+     String returnMessage = "";
+	 try
+	 {
+		String loanScore = "";
+		String loanAvl = bank.processRequest(customerID,"REQLOAN");
+		Double loanAvlDouble = Double.parseDouble(loanAvl);
+
+		if(loanAvlDouble > 0)
+		{
+			returnMessage = "DECLINED. Because, you have a loan account available..";
+		}
+		else
+		{
+			loanScore = bank.getLoanScore(customerID);
+			Integer loanScoreInteger = Integer.parseInt(loanScore);
+			if(loanScoreInteger>70)
+			{
+				//returnMessage = "Your score is: " +loanScoreInteger+" Newbank shall be met your loan request in a short time..";
+				out.println("Your score is: " +loanScoreInteger);
+				out.println("Newbank shall be met your loan request in a short time..");	
+				out.println("Please enter your request for Loan Amount: ");
+				String loanAmount = in.readLine();
+				returnMessage = bank.setLoanAmount(customerID,loanAmount,"REQUEST"); 
+
+				if(returnMessage.equals("OK"))
+				{
+					out.println("Your request has been taken and recorded to the system. If you approve it, it will be transferred to your account.");	
+					out.println("Press 'Y' to confirm..");
+
+					String approvalReturn = in.readLine();
+					if(approvalReturn.equals("Y"))
+					{
+						returnMessage = bank.setLoanAmount(customerID, loanAmount,"APPROVAL"); 	
+						if(returnMessage.equals("OK"))
+						{
+							out.println("Your money will be transferred..");
+							returnMessage = "Check your accont from the main menu / 1. Show all accounts inforamtion";
+							return returnMessage;	
+						}
+						else
+						{
+							out.println("Received an error in the approval process..");	
+						}
+					}
+					else
+					{
+						out.println("Exiting the request process");	
+						returnMessage = "Exited during approval phase";
+						return returnMessage;
+					}
+				}
+
+				return returnMessage;
+			}
+			else
+			{
+				returnMessage = "DECLINED..";
+			}
+		}
+
+		 return returnMessage;
+>>>>>>> 55a78f7a16d6d0ef64bdd924745e8fdaf693d683
 	 }
 
 	@Override

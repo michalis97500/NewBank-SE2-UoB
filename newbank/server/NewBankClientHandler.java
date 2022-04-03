@@ -433,7 +433,7 @@ public class NewBankClientHandler extends Thread {
 						}
 						else
 						{
-							out.println("onay sürecind e hara aldı");	
+							out.println("Received an error in the approval process..");	
 						}
 					}
 					else

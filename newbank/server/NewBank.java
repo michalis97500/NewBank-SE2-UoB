@@ -1,10 +1,14 @@
 package newbank.server;
 
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class NewBank {
 
 	private static final NewBank bank = new NewBank();
+	private String minCreditScore = "75";
+	private String lowInterestPeriod = "30";
 	DatabaseHandler dbHandle = new DatabaseHandler();
 
 	private NewBank() {
@@ -54,7 +58,6 @@ public class NewBank {
 	// commands from the NewBank customer are processed in this method
 	public synchronized String processRequest(String customerID, String request) {
 		String[] command = request.split(" ");
-		System.out.println("abaa");
 		try {
 			if (dbHandle.customerExists(customerID)) {
 				switch (command[0]) {
@@ -73,8 +76,8 @@ public class NewBank {
 						return changePassword(customerID, command[2], command[3], command[4]);
 					case "GETCURRENTSALT":
 						return getCurrentSalt(customerID);
-					case "REQLOAN": 							//added by ycanli
-						return getLoanAvailable(customerID);
+					case "LOAN": 	//Y.Canli + M.Christou
+						return newLoan(customerID, command[1], command[2]);
 					default:
 						return "FAIL";
 				}
@@ -95,27 +98,6 @@ public class NewBank {
 		}
 	}
 
-	private String getLoanAvailable(String customerID) { // Method implemented by ycanli
-		try {
-			return dbHandle.getLoanAvailable(customerID);
-		} catch (SQLException e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-	
-	public String getLoanScore(String customerID) { // Method implemented by ycanli
-		try {
-			return dbHandle.getLoanScore(customerID);
-		} catch (SQLException e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-
-	public String setLoanAmount(String customerID,String loanAmount,String startType) { // Method implemented by ycanli
-		return dbHandle.setLoanAmount(customerID,loanAmount,startType);
-	}
 
 	private String showMyAccounts(String customerID) { // Method implemented by M. Christou
 		try {
@@ -271,4 +253,41 @@ public class NewBank {
 	public String changePassword(String customerID, String oldPassHash, String newPassHash, String salt) { // Method implemented by M. Christou
 		return dbHandle.changePassword(customerID, oldPassHash, newPassHash, salt);
 	}
+
+	public String newLoan(String customerID, String loanAmount, String loanPeriodDays){
+
+		//Check if user is eligible for loan.
+		try{
+			if(Boolean.TRUE.equals(dbHandle.customerHasActiveLoan(customerID))){
+				return "Error : You already have an active loan.";
+			}
+			int creditscore = Integer.parseInt(dbHandle.getCreditScore(customerID));
+			if(creditscore <= 60 ){
+				return "Error : Your credit score is " + creditscore + ". The minimum score is " + minCreditScore;
+			}
+
+		}catch (Exception e) {
+			e.printStackTrace();
+			return "Error: Please contact the bank with error code L-001";
+		}
+
+		//Confirm with the user the terms of loan
+		Double interestRate = 20.0;
+		if(Integer.parseInt(loanPeriodDays) <= Integer.parseInt(lowInterestPeriod)){
+			interestRate = 15.0;
+		}
+		Double payable = Double.parseDouble(loanAmount)* (1+interestRate/100);
+
+		try {
+			String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
+			if(Boolean.TRUE.equals(dbHandle.createLoan(customerID, timeStamp, loanAmount, payable.toString(), "0", "ACTIVE"))){
+				return "SUCCESS";
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "Error: Please contact the bank with error code L-002";
+		}
+		return "Error: Please contact the bank with error code L-003";
+	}
+
 }

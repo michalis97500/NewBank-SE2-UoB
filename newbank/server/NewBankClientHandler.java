@@ -383,7 +383,7 @@ public class NewBankClientHandler extends Thread {
 
 	}
 
-	public String processLoan(String customerID) // YCanli + M.Christou
+	public String loanBuilder(String customerID) // YCanli + M.Christou
 	{
 		System.out.println("You are applying for a loan of $" + loanAmount + " repayable in " + loanPeriodDays
 				+ " days. The interest rate is " +
@@ -457,8 +457,11 @@ public class NewBankClientHandler extends Thread {
 						case "5":
 						case "Loan":
 							clearScreen(null);
-							String returnProcess = processLoan(customerID);
-							out.println(returnProcess);
+							request = loanBuilder(customerID);
+							if (request.equals(error)) {
+								validCommand = false;
+								mainMenu();
+							}
 							break;
 						case "6":
 						case "Logout":

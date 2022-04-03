@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-//import java.sql.SQLException;
 
 public class NewBankClientHandler extends Thread {
 
@@ -95,31 +94,25 @@ public class NewBankClientHandler extends Thread {
 			String accountType = in.readLine();
 			switch (accountType) {
 				case "1":
-					accountType = savings;
-					break;
-				case "2":
-					accountType = checkings;
-					break;
-				case "3":
-					accountType = "Main";
-					break;
-				case "4":
-					accountType = "Loan";
-					break;
-				case "Main":
-					accountType = "Main";
-					break;
 				case "Savings":
 					accountType = savings;
 					break;
+				case "2":
 				case "Checking":
 					accountType = checkings;
 					break;
+				case "3":
+				case "Main":
+					accountType = "Main";
+					break;
+				case "4":
 				case "Loan":
 					accountType = "Loan";
 					break;
 				case "5":
 				case "Cancel":
+				case "cancel":
+				case "CANCEL":
 					return "SYSTEM_CANCEL";
 				default:
 					accountType = error;
@@ -151,7 +144,7 @@ public class NewBankClientHandler extends Thread {
 		// Select account to pay from
 		while (Boolean.FALSE.equals(accountFromBool)) {
 			try {
-				out.println("To cancel at any time, please input \"CANCEL\"");
+				out.println("To cancel at any time, please write \"Cancel\"");
 				responce = bank.processRequest(customerID, "SHOWMYACCOUNTS");
 				accountsFrom = responce.split("\n");
 				accountDisplay = new StringBuilder();
@@ -170,7 +163,7 @@ public class NewBankClientHandler extends Thread {
 				out.println("Please select the account to pay from:");
 				String accountSelection = in.readLine();
 				errorString = accountSelection;
-				if (accountSelection.equals(cancel)) {
+				if (accountSelection.equalsIgnoreCase(cancel)) {
 					return error;
 				}
 				if (accountSelection.length() == 1 && accountsFrom != null && accountsFrom.length > 0) {
@@ -201,7 +194,7 @@ public class NewBankClientHandler extends Thread {
 		while (Boolean.FALSE.equals(accountToBool)) {
 			try {
 
-				out.println("To cancel at any time, please input \"CANCEL\"");
+				out.println("To cancel at any time, please input \"Cancel\"");
 				responce = bank.processRequest(customerID, "SHOWMYACCOUNTS");
 				StringBuilder accountDisplay2 = new StringBuilder();
 				String[] accountsToAll = responce.split("\n");
@@ -225,7 +218,7 @@ public class NewBankClientHandler extends Thread {
 				out.println("Please select the account to pay to:");
 				String accountSelection = in.readLine();
 				errorString = accountSelection;
-				if (accountSelection.equals(cancel)) {
+				if (accountSelection.equalsIgnoreCase(cancel)) {
 					return error;
 				}
 				if (accountSelection.length() == 1 && accountsTo != null && accountsTo.length > 0) {
@@ -253,12 +246,12 @@ public class NewBankClientHandler extends Thread {
 			// Get account balance
 			try {
 
-				out.println("To cancel at any time, please input \"CANCEL\"");
+				out.println("To cancel at any time, please input \"Cancel\"");
 				amount = in.readLine();
 				if (amount == null || amount.isEmpty() || amount.trim().isEmpty()) {
 					clearScreen("No amount entered.\nPlease enter the amount to move. The available balance is : " + myBalance);
 				}
-				if (amount!=null && amount.equals(cancel)) {
+				if (amount!=null && amount.equalsIgnoreCase(cancel)) {
 					return error;
 				}
 			} catch (Exception e) {
@@ -322,7 +315,7 @@ public class NewBankClientHandler extends Thread {
 				out.println("Beneficiary is empty, aborting.");
 				return error;
 			}
-			if (beneficiary.equals(cancel)) {
+			if (beneficiary.equalsIgnoreCase(cancel)) {
 				out.println("Cancelling...");
 				return error;
 			}
@@ -345,7 +338,7 @@ public class NewBankClientHandler extends Thread {
 				out.println("No amount entered, aborting.");
 				return error;
 			}
-			if (amount.equals(cancel)) {
+			if (amount.equalsIgnoreCase(cancel)) {
 				out.println("Cancelling...");
 				return error;
 			}
@@ -390,77 +383,12 @@ public class NewBankClientHandler extends Thread {
 
 	}
 
-	public String processLoan(String customerID)   //ycanli
+	public String processLoan(String customerID)   //YCanli + M.Christou
 	{
-     String returnMessage = "";
-	 try
-	 {
-		String loanScore = "";
-		String loanAvl = bank.processRequest(customerID,"REQLOAN");
-		Double loanAvlDouble = Double.parseDouble(loanAvl);
-
-		if(loanAvlDouble > 0)
-		{
-			returnMessage = "DECLINED. Because, you have a loan account available..";
-		}
-		else
-		{
-			loanScore = bank.getLoanScore(customerID);
-			Integer loanScoreInteger = Integer.parseInt(loanScore);
-			if(loanScoreInteger>70)
-			{
-				//returnMessage = "Your score is: " +loanScoreInteger+" Newbank shall be met your loan request in a short time..";
-				out.println("Your score is: " +loanScoreInteger);
-				out.println("Newbank shall be met your loan request in a short time..");	
-				out.println("Please enter your request for Loan Amount: ");
-				String loanAmount = in.readLine();
-				returnMessage = bank.setLoanAmount(customerID,loanAmount,"REQUEST"); 
-
-				if(returnMessage.equals("OK"))
-				{
-					out.println("Your request has been taken and recorded to the system. If you approve it, it will be transferred to your account.");	
-					out.println("Press 'Y' to confirm..");
-
-					String approvalReturn = in.readLine();
-					if(approvalReturn.equals("Y"))
-					{
-						returnMessage = bank.setLoanAmount(customerID, loanAmount,"APPROVAL"); 	
-						if(returnMessage.equals("OK"))
-						{
-							out.println("Your money will be transferred..");
-							returnMessage = "Check your accont from the main menu / 1. Show all accounts inforamtion";
-							return returnMessage;	
-						}
-						else
-						{
-							out.println("onay sürecind e hara aldı");	
-						}
-					}
-					else
-					{
-						out.println("Exiting the request process");	
-						returnMessage = "Exited during approval phase";
-						return returnMessage;
-					}
-				}
-
-				return returnMessage;
-			}
-			else
-			{
-				returnMessage = "DECLINED..";
-			}
-		}
-
-		 return returnMessage;
+		System.out.println("You are applying for a loan of $" + loanAmount + " repayable in " + loanPeriodDays + " days. The interest rate is " + 
+		interestRate + "%. Total amount repayable is : " +  payable);
+		
 	 }
-	 catch (IOException e)
-	 {
-		e.printStackTrace();
-		return returnMessage;
-	 }
-	 
-}
 
 	@Override
 	public void run() { // Method modified by M.Christou for better UX

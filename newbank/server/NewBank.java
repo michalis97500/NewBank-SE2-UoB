@@ -266,6 +266,9 @@ public class NewBank {
 			if (creditscore <= 60) {
 				return "Error : Your credit score is " + creditscore + ". The minimum score is " + minCreditScore;
 			}
+			if (Boolean.FALSE.equals(dbHandle.accountExists(customerID, "Main"))) {
+				return "Error : You do not have an active Main account. ";
+			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -281,9 +284,11 @@ public class NewBank {
 
 		try {
 			String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
-			if (Boolean.TRUE
-					.equals(dbHandle.createLoan(customerID, timeStamp, loanAmount, payable.toString(), "0", "ACTIVE"))) {
-				return "SUCCESS";
+			if (Boolean.TRUE.equals(dbHandle.createLoan(customerID, timeStamp, loanAmount, payable.toString(), "0", "ACTIVE")) && 
+					dbHandle.modifyAccountBalance(customerID, "Main", Double.parseDouble(loanAmount)).equals("SUCCESS")	){
+				return "Success. You have been granted a loan of $" + loanAmount + " repayable in " + loanPeriodDays
+				+ " days. The interest rate is " +
+				interestRate + "%. Total amount repayable is : " + payable;
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

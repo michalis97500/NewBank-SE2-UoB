@@ -385,10 +385,7 @@ public class NewBankClientHandler extends Thread {
 
 	public String loanBuilder(String customerID) // YCanli + M.Christou
 	{
-		System.out.println("You are applying for a loan of $" + loanAmount + " repayable in " + loanPeriodDays
-				+ " days. The interest rate is " +
-				interestRate + "%. Total amount repayable is : " + payable);
-
+		return null;
 	}
 
 	@Override

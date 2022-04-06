@@ -383,10 +383,71 @@ public class NewBankClientHandler extends Thread {
 
 	}
 
-	public String loanBuilder(String customerID) // YCanli + M.Christou
+	public String loanBuilder(String customerID) // Cathy + Agnes
 	{
-		return null;
+		String loanAmount;
+		String loanPeriodDays;
+		
+		// Request loan amount from the user 
+		try {
+			out.println("To cancel at any time, please input \"CANCEL\"");
+			
+			out.println("Please enter the loan amount you would like to borrow:");
+			loanAmount = in.readLine();
+			if (loanAmount == null || loanAmount.isEmpty() || loanAmount.trim().isEmpty()) {
+				out.println("Loan amount is empty, aborting.");
+				return error;
+			}
+			if (loanAmount.equalsIgnoreCase(cancel)) {
+				out.println("Cancelling...");
+				return error;
+			}
+		} catch (Exception e) {
+			out.println("Error in loan amount requested, aborting.");
+			e.printStackTrace();
+			return error;
+			}
+		// Request number of days for the loan from the user
+		try {
+			out.println("Please enter your preferred loan repayment time period in days:");
+			loanPeriodDays = in.readLine();
+			if (loanPeriodDays == null || loanPeriodDays.isEmpty() || loanPeriodDays.trim().isEmpty()) {
+				out.println("No loan repayment time period specified, aborting.");
+				return error;
+			}
+			if (loanPeriodDays.equalsIgnoreCase(cancel)) {
+				out.println("Cancelling...");
+				return error;
+			}	
+		} catch (Exception e) {
+			out.println("Error in loan repayment time request, aborting.");
+			e.printStackTrace();
+			return error;
+			}
+		
+		//Confirm the loan request details
+		clearScreen("Confirm your loan requested is for $" + loanAmount + " for " + loanPeriodDays + " days?");
+		out.println("1. Confirm");
+		out.println("2. Reject");
+		String confirmation;
+		try {
+			confirmation = in.readLine();
+			switch (confirmation) {
+				case "1":
+				case "Confirm":
+				case "Yes":
+					return "LOAN " + customerID  + " " + loanAmount  + " " + loanPeriodDays;
+				default:
+					out.println("Action has been cancelled");
+					return error;
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			return error;
+		}
+
 	}
+	
 
 	@Override
 	public void run() { // Method modified by M.Christou for better UX

@@ -200,8 +200,35 @@ public class DatabaseHandler {
     }
 
   }
+    
+  public String showMyLoanAccount(String customerID) throws SQLException {// Method implemented by H. Chan
+    Statement statement = databaseConnection.createStatement();
+    String loanBalance = null;
+    String totalRepayment = null;
+    String output = "";
 
-  public boolean customerExists(String customerID) throws SQLException {// Method implemented by M. Christou
+    // Get loan account from database
+    try {
+      String idAndBalances = "SELECT id, Loan_Amount, Total_Repayment FROM " + loanTable;
+      ResultSet results = statement.executeQuery(idAndBalances);
+      while (results.next()) {
+        if (customerID.equals(results.getString("id"))) { 
+          loanBalance = results.getString("Loan_Amount");
+          totalRepayment = results.getString("Total_Repayment");
+          break;
+        }
+      }
+      output = "Loan Balance : $" + loanBalance + "\n" + "Total Repayment : $" + totalRepayment;
+      return output;
+    } catch (Exception e) {
+      e.printStackTrace();
+      return "No database connection";
+    } finally {
+      statement.close();
+    }
+  }  
+  
+    public boolean customerExists(String customerID) throws SQLException {// Method implemented by M. Christou
     Statement statement = databaseConnection.createStatement();
     try {
       String idAndBalances = "SELECT id FROM " + accountTable;

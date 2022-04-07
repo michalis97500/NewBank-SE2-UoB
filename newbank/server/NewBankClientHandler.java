@@ -76,9 +76,10 @@ public class NewBankClientHandler extends Thread {
 		out.println("3. Pay person/entity - PAY <Entity> <Ammount>");
 		out.println("4. Transfer funds between accounts - MOVE <Amount> <From> <To>");
 		out.println("5. Loan request"); // added by ycanli
-		out.println("6. Logout");
-		out.println("7. Exit");
-		out.println("8. Change password");
+		out.println("6. Show my loan account - SHOWMYLOANACCOUNT"); // added by H. Chan
+		out.println("7. Logout");
+		out.println("8. Exit");
+		out.println("9. Change password");
 		out.println("You may navigate the menu by entering the number or using the commands.");
 	}
 
@@ -517,17 +518,20 @@ public class NewBankClientHandler extends Thread {
 							}
 							break;
 						case "6":
+							clearScreen(null);
+							request = "SHOWMYLOANACCOUNT";
+							break;	
+						case "7":
 						case "Logout":
 							clearScreen(null);
 							Thread.currentThread().interrupt();
 							run();
 							break;
-
-						case "7":
+						case "8":
 						case "Exit":
 							out.println("CLIENT_CLOSE_COMMAND");
 							break;
-						case "8":
+						case "9":
 							request = changePassword(customerID);
 							if (request.equals(error)) {
 								validCommand = false;
@@ -536,6 +540,7 @@ public class NewBankClientHandler extends Thread {
 							}
 							break;
 						case "SHOWMYACCOUNTS":
+						case "SHOWMYLOANACCOUNT":
 						case "NEWACCOUNT":
 						case "MOVE":
 						case "PAY":

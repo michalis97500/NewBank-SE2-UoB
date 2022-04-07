@@ -12,6 +12,12 @@ SHOWMYACCOUNTS
 Returns a list of all the customers accounts along with their current balance 
 e.g. Main: 1000.0 
 
+SHOWLOANACCOUNT
+Returns the loan account balance with the bank along with repayment 
+details
+e.g. Loan Balance : $3000
+Total Repayment : $3590
+
 NEWACCOUNT <Name>
 e.g. NEWACCOUNT Savings
 Returns SUCCESS or FAIL

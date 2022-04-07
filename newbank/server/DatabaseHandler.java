@@ -9,7 +9,6 @@ public class DatabaseHandler {
   private static String main = "Main";
   private static String savings = "Savings";
   private static String checking = "Checking";
-  private static String loan = "avail_loan_amount";
   private static String accountTable = "Account_Table";
   private static String loanTable = "Loan_Table"; // Ycanli string for loan_table
   private static String updateAllAccountInfo = "INSERT INTO " + accountTable
@@ -43,15 +42,15 @@ public class DatabaseHandler {
   public void initiateDatabase() { // Method implemented by M.Christou
     try (Statement tablecreation = databaseConnection.createStatement()) {
       String accountHeaders = "CREATE TABLE IF NOT EXISTS " + accountTable + " (\n"
-          + "id text PRIMARY KEY,\n"
-          + "username text NOT NULL,\n"
-          + "passhash text NOT NULL,\n"
-          + "salt text NOT NULL,\n"
-          + "name text NOT NULL,\n"
-          + "Main text,\n"
-          + "Savings text,\n"
-          + "Checking text\n"
-          + "CreditScore text NOT NULL,\n"
+          + "id text PRIMARY KEY ,\n"
+          + "username text NOT NULL ,\n"
+          + "passhash text NOT NULL ,\n"
+          + "salt text NOT NULL ,\n"
+          + "name text NOT NULL ,\n"
+          + "Main text ,\n"
+          + "Savings text ,\n"
+          + "Checking text ,\n"
+          + "CreditScore text NOT NULL\n"
           + ");";
       tablecreation.execute(accountHeaders);
       System.out.println("Account_Table has been created or it already exists");
@@ -61,13 +60,13 @@ public class DatabaseHandler {
     }
 
     try (Statement tablecreation = databaseConnection.createStatement()) { // ycanli + updated by M.Christou
-      String loanHeaders = "CREATE TABLE IF NOT EXISTS " + accountTable + " (\n"
+      String loanHeaders = "CREATE TABLE IF NOT EXISTS " + loanTable + " (\n"
           + "id text NOT NULL,\n"
           + "loan_id text PRIMARY KEY,\n"
           + "Loan_Amount text NOT NULL,\n"
           + "Total_Repayment  text NOT NULL,\n"
           + "Outstanding text NOT NULL,\n"
-          + "Completed text NOT NULL,\n"
+          + "Completed text NOT NULL \n"
           + ");";
       tablecreation.execute(loanHeaders);
       System.out.println("Loan_table has been created or it already exists");
@@ -161,7 +160,6 @@ public class DatabaseHandler {
     String mainBalance = null;
     String checkingBalance = null;
     String savingsBalance = null;
-    String loanBalance = null;
 
     // Get accounts from database
     try {
@@ -182,22 +180,6 @@ public class DatabaseHandler {
       statement.close();
     }
 
-    // Get loan_amount from database - ycanli
-    try {
-      String idAndAmount = "SELECT id, avail_loan_amount FROM " + loanTable;
-      ResultSet results = statement.executeQuery(idAndAmount);
-      while (results.next()) {
-        if (customerID.equals(results.getString("id"))) { // if we are here that means we have the correct loan_amount
-          loanBalance = results.getString(loan);
-          break;
-        }
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
-      return "No database connection";
-    } finally {
-      statement.close();
-    }
 
     // Put accounts in a string to return
     StringBuilder accounts = new StringBuilder();
@@ -211,7 +193,6 @@ public class DatabaseHandler {
       if (Boolean.TRUE.equals(accountActive(savingsBalance))) {
         accounts.append("Savings : $" + savingsBalance + "\n");
       }
-      accounts.append("Loan : $" + loanBalance + "\n");
       return accounts.toString();
     } catch (Exception e) {
       e.printStackTrace();
@@ -375,10 +356,10 @@ public class DatabaseHandler {
   }
 
   public void addTestData() {// Method implemented by M. Christou
-    updateAccountInfo("1", "Bhagy", "pass", "$2a$10$RkrdW3pxOvLIZlTV0kfiiu", "Bhagy", noaccount, noaccount, noaccount,
+    updateAccountInfo("1", "Bhagy", "$2a$10$RkrdW3pxOvLIZlTV0kfiiuo8zSshxC3RofVWDiHukv37uabGRoylq", "$2a$10$RkrdW3pxOvLIZlTV0kfiiu", "Bhagy", noaccount, noaccount, noaccount,
         "0");
-    updateAccountInfo("2", "John", "pass", "$2a$10$RkrdW3pxOvLIZlTV0kfiiu", "John", "100", "50", "2500", "60");
-    updateAccountInfo("3", "Test", "pass", "$2a$10$RkrdW3pxOvLIZlTV0kfiiu", "Test", noaccount, "999999", noaccount,
+    updateAccountInfo("2", "John", "$2a$10$RkrdW3pxOvLIZlTV0kfiiuo8zSshxC3RofVWDiHukv37uabGRoylq", "$2a$10$RkrdW3pxOvLIZlTV0kfiiu", "John", "100", "50", "2500", "60");
+    updateAccountInfo("3", "Test", "$2a$10$RkrdW3pxOvLIZlTV0kfiiuo8zSshxC3RofVWDiHukv37uabGRoylq", "$2a$10$RkrdW3pxOvLIZlTV0kfiiu", "Test", noaccount, "999999", noaccount,
         "100");
   }
 

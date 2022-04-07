@@ -89,8 +89,7 @@ public class NewBankClientHandler extends Thread {
 			out.println("1. Savings account");
 			out.println("2. Checking account");
 			out.println("3. Main account");
-			out.println("4. Loan account"); // yc
-			out.println("5. Cancel and return to main menu");
+			out.println("4. Cancel and return to main menu");
 			String accountType = in.readLine();
 			switch (accountType) {
 				case "1":
@@ -106,10 +105,6 @@ public class NewBankClientHandler extends Thread {
 					accountType = "Main";
 					break;
 				case "4":
-				case "Loan":
-					accountType = "Loan";
-					break;
-				case "5":
 				case "Cancel":
 				case "cancel":
 				case "CANCEL":

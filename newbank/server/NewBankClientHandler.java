@@ -444,7 +444,6 @@ public class NewBankClientHandler extends Thread {
 
 	}
 	
-
 	@Override
 	public void run() { // Method modified by M.Christou for better UX
 		// keep getting requests from the client and processing them
@@ -519,7 +518,7 @@ public class NewBankClientHandler extends Thread {
 							break;
 						case "6":
 							clearScreen(null);
-							request = "SHOWMYLOANACCOUNT";
+							request = "SHOWACTIVELOANINFO";
 							break;	
 						case "7":
 						case "Logout":

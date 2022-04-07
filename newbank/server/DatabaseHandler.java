@@ -201,34 +201,7 @@ public class DatabaseHandler {
 
   }
     
-  public String showMyLoanAccount(String customerID) throws SQLException {// Method implemented by H. Chan
-    Statement statement = databaseConnection.createStatement();
-    String loanBalance = null;
-    String totalRepayment = null;
-    String output = "";
-
-    // Get loan account from database
-    try {
-      String idAndBalances = "SELECT id, Loan_Amount, Total_Repayment FROM " + loanTable;
-      ResultSet results = statement.executeQuery(idAndBalances);
-      while (results.next()) {
-        if (customerID.equals(results.getString("id"))) { 
-          loanBalance = results.getString("Loan_Amount");
-          totalRepayment = results.getString("Total_Repayment");
-          break;
-        }
-      }
-      output = "Loan Balance : $" + loanBalance + "\n" + "Total Repayment : $" + totalRepayment;
-      return output;
-    } catch (Exception e) {
-      e.printStackTrace();
-      return "No database connection";
-    } finally {
-      statement.close();
-    }
-  }  
-  
-    public boolean customerExists(String customerID) throws SQLException {// Method implemented by M. Christou
+  public boolean customerExists(String customerID) throws SQLException {// Method implemented by M. Christou
     Statement statement = databaseConnection.createStatement();
     try {
       String idAndBalances = "SELECT id FROM " + accountTable;
@@ -486,6 +459,26 @@ public class DatabaseHandler {
       statement.close();
     }
   }
+
+  public String activeLoanInformation(String customerID) throws SQLException {// Method implemented by H. Chan
+    //Modified by M.Christou
+    Statement statement = databaseConnection.createStatement();
+    try {
+      String idAndLoan = "SELECT id, Completed, Outstanding, Total_Repayment FROM " + loanTable;
+      ResultSet results = statement.executeQuery(idAndLoan);
+      while (results.next()) {
+        if (customerID.equals(results.getString("id")) && results.getString("Completed").equals("ACTIVE")) {
+          return "Outstanding amount : $" + results.getString("Outstanding") + "\n" + "Total Repayment : $" + results.getString("Total_Repayment");
+        }
+      }
+      return "No active loan found";
+    } catch (Exception e) {
+      e.printStackTrace();
+      return "No database connection";
+    } finally {
+      statement.close();
+    }
+  }  
 
   public String getCreditScore(String customerID) throws SQLException {// Method implemented by ycanli + modified by
                                                                        // M.Christou

@@ -64,8 +64,8 @@ public class NewBank {
 					case "SHOWMYACCOUNTS":
 						return showMyAccounts(customerID);
 					// Added by M. Christou
-					case "SHOWMYLOANACCOUNT":
-						return showMyLoanAccount(customerID);
+					case "SHOWACTIVELOANINFO":
+						return showActiveLoanInfo(customerID);
 					// Added by H. Chan
 					case "NEWACCOUNT":
 						return newAccount(customerID, command[1]);
@@ -109,9 +109,9 @@ public class NewBank {
 
 	}
 
-	private String showMyLoanAccount(String customerID) { // Method implemented by H. Chan
+	private String showActiveLoanInfo(String customerID) { // Method implemented by H. Chan
 		try {
-			return dbHandle.showMyLoanAccount(customerID);
+			return dbHandle.activeLoanInformation(customerID);
 		} catch (Exception e) {
 			return "Cannot display accounts";
 		}

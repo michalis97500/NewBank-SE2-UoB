@@ -405,6 +405,7 @@ public class NewBankClientHandler extends Thread {
 			}
 		// Request number of days for the loan from the user
 		try {
+			clearScreen("To cancel at any time, please input \"CANCEL\"");
 			out.println("Please enter your preferred loan repayment time period in days:");
 			loanPeriodDays = in.readLine();
 			if (loanPeriodDays == null || loanPeriodDays.isEmpty() || loanPeriodDays.trim().isEmpty()) {
@@ -421,8 +422,18 @@ public class NewBankClientHandler extends Thread {
 			return error;
 			}
 		
-		//Confirm the loan request details
-		clearScreen("Confirm your loan requested is for $" + loanAmount + " for " + loanPeriodDays + " days?");
+		//Offer the interest rates to the user		
+
+			if(Integer.parseInt(loanPeriodDays) <= 30){	
+				Double interestRate = 15.0;
+				Double repaymentAmount = Double.parseDouble(loanAmount) * (1 + interestRate / 100);
+				clearScreen("Loan requested is for $" + loanAmount + " for " + loanPeriodDays + " days. The interest rate is 15% making the total repayment amount to New Bank $" + repaymentAmount + ". Would you like to confirm?\n");
+			}else{
+				Double interestRate = 20.0;
+				Double repaymentAmount = Double.parseDouble(loanAmount) * (1 + interestRate / 100);
+				clearScreen("Loan requested is for $" + loanAmount + " for " + loanPeriodDays + " days. The interest rate is 20% making the total repayment amount to New Bank $" + repaymentAmount + ". Would you like to confirm? \n");
+			}
+
 		out.println("1. Confirm");
 		out.println("2. Reject");
 		String confirmation;

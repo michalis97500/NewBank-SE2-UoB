@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.text.DecimalFormat;
 
 public class NewBankClientHandler extends Thread {
 
@@ -386,9 +387,8 @@ public class NewBankClientHandler extends Thread {
 		
 		// Request loan amount from the user 
 		try {
+			out.println("Please enter the loan amount you would like to borrow.");
 			out.println("To cancel at any time, please input \"CANCEL\"");
-			
-			out.println("Please enter the loan amount you would like to borrow:");
 			loanAmount = in.readLine();
 			if (loanAmount == null || loanAmount.isEmpty() || loanAmount.trim().isEmpty()) {
 				out.println("Loan amount is empty, aborting.");
@@ -398,15 +398,32 @@ public class NewBankClientHandler extends Thread {
 				out.println("Cancelling...");
 				return error;
 			}
-		} catch (Exception e) {
+			Double amount = Double.parseDouble(loanAmount);
+			//Checking for negative numbers
+			if (amount <= 0) {
+				clearScreen("Minimum loan amount is $1.");
+				return loanBuilder(customerID);
+			}
+			//Setting maximum loan amount
+			if (amount > 100000) {
+				clearScreen("Maximum loan amount is $100,000.");
+				return loanBuilder(customerID);
+			}
+		} //Error handling added		
+		catch (NumberFormatException e) {
+			clearScreen("Amount entered must be numbers only, please re-enter the loan amount you would like to borrow.");
+			return loanBuilder(customerID);
+		}
+		 catch (Exception e) {
 			out.println("Error in loan amount requested, aborting.");
 			e.printStackTrace();
 			return error;
 			}
-		// Request number of days for the loan from the user
+
+			// Request number of days for the loan from the user
 		try {
-			clearScreen("To cancel at any time, please input \"CANCEL\"");
-			out.println("Please enter your preferred loan repayment time period in days:");
+			clearScreen("Please enter your preferred loan repayment time period in days:");
+			out.println("To cancel at any time, please input \"CANCEL\"");
 			loanPeriodDays = in.readLine();
 			if (loanPeriodDays == null || loanPeriodDays.isEmpty() || loanPeriodDays.trim().isEmpty()) {
 				out.println("No loan repayment time period specified, aborting.");
@@ -416,7 +433,28 @@ public class NewBankClientHandler extends Thread {
 				out.println("Cancelling...");
 				return error;
 			}	
-		} catch (Exception e) {
+			Double days = Double.parseDouble(loanPeriodDays);
+			//Checking for negative numbers
+			if (days <= 0) {
+				clearScreen("Minimum loan days is 1 day. Loan request starting again...");
+				return loanBuilder(customerID);
+			}
+			//Set maximum loan timeframe
+			if (days > 365) {
+				clearScreen("Maximum loan days is 365 days. Loan request starting again...");
+				return loanBuilder(customerID);
+			}
+			if (loanPeriodDays.contains(".")) {
+				clearScreen("Please specify loan period in full days only. Loan request starting again...");
+				return loanBuilder(customerID);
+			}
+		}
+		//Error Handling 
+		catch (NumberFormatException e) {
+			clearScreen("Days entered must be numbers only. Loan request starting again...");
+			return loanBuilder(customerID);
+			} 
+		catch (Exception e) {
 			out.println("Error in loan repayment time request, aborting.");
 			e.printStackTrace();
 			return error;
@@ -426,12 +464,18 @@ public class NewBankClientHandler extends Thread {
 
 			if(Integer.parseInt(loanPeriodDays) <= 30){	
 				Double interestRate = 15.0;
+				Double amount = Double.parseDouble(loanAmount);
 				Double repaymentAmount = Double.parseDouble(loanAmount) * (1 + interestRate / 100);
-				clearScreen("Loan requested is for $" + loanAmount + " for " + loanPeriodDays + " days. The interest rate is 15% making the total repayment amount to New Bank $" + repaymentAmount + ". Would you like to confirm?\n");
+				// Rounding up numbers to 2 decimal places
+				DecimalFormat df = new DecimalFormat("###.00");
+				clearScreen("Loan requested is for $" + df.format(amount) + " for " + loanPeriodDays + " days. The interest rate is 15% making the total repayment amount to New Bank $" + df.format(repaymentAmount) + ". Would you like to confirm?\n");
 			}else{
 				Double interestRate = 20.0;
+				Double amount = Double.parseDouble(loanAmount);
 				Double repaymentAmount = Double.parseDouble(loanAmount) * (1 + interestRate / 100);
-				clearScreen("Loan requested is for $" + loanAmount + " for " + loanPeriodDays + " days. The interest rate is 20% making the total repayment amount to New Bank $" + repaymentAmount + ". Would you like to confirm? \n");
+				// Rounding up numbers to 2 decimal places
+				DecimalFormat df = new DecimalFormat("###.00");
+				clearScreen("Loan requested is for $" + df.format(amount) + " for " + loanPeriodDays + " days. The interest rate is 20% making the total repayment amount to New Bank $" + df.format(repaymentAmount) + ". Would you like to confirm? \n");
 			}
 
 		out.println("1. Confirm");
@@ -439,6 +483,7 @@ public class NewBankClientHandler extends Thread {
 		String confirmation;
 		try {
 			confirmation = in.readLine();
+			
 			switch (confirmation) {
 				case "1":
 				case "Confirm":

@@ -342,7 +342,7 @@ public class NewBank {
 
 		try {
 			String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
-			if (Boolean.TRUE.equals(dbHandle.createLoan(customerID, timeStamp, loanAmount, payable.toString(), "0", "ACTIVE")) && 
+			if (Boolean.TRUE.equals(dbHandle.createLoan(customerID, timeStamp, loanAmount.toString(), payable.toString(), payable.toString(), "ACTIVE")) && 
 					dbHandle.modifyAccountBalance(customerID, "Main", Double.parseDouble(loanAmount)).equals("SUCCESS")	){
 				return "Success. You have been granted a loan of $" + loanAmount + " repayable in " + loanPeriodDays
 				+ " days. The interest rate is " +

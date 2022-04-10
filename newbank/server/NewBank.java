@@ -81,8 +81,10 @@ public class NewBank {
 						return getCurrentSalt(customerID);
 					case "LOAN": // Y.Canli + M.Christou
 						return newLoan(customerID, command[1], command[2]);
+					case "REPAYLOAN": //M.Christou
+						return repayLoan(customerID, command[1]);
 					default:
-						return "FAIL";
+						return "FAIL : No such command.";
 				}
 			}
 		} catch (SQLException e) {
@@ -107,6 +109,50 @@ public class NewBank {
 			return "Cannot display accounts";
 		}
 
+	}
+
+	private String repayLoan(String customerID, String amount){ // Method implemented by M. Christou
+		Double amountToRepay = null;
+		Boolean moneyDeducted = false;
+		//Valid amount
+		try {
+			amountToRepay = Double.parseDouble(amount);
+		} catch (Exception e) {
+			return "Amount entered is not valid.";
+		}
+		
+		//Check if customer has enough money - deduct it
+		try {
+			if(transaction(customerID, "Main", -amountToRepay).equals("SUCCESS")){
+				moneyDeducted = true;
+			}
+		} catch (Exception e) {
+			return "Cannot deduct money from account. Please check your balance or contact the bank.";
+		}
+
+		//Update loan balance
+		try {
+			String dbStringReturn = dbHandle.modifyLoanBalance(customerID, amountToRepay);
+			if( (dbStringReturn.equals("Loan repaid") && Boolean.TRUE.equals(moneyDeducted)) || (dbStringReturn.startsWith("Loan repayment successfull.") && Boolean.TRUE.equals(moneyDeducted)) ){
+				moneyDeducted = false;
+				return dbStringReturn;
+			}
+			if(dbStringReturn.equals("Repay amount is more than outstanding amount") && Boolean.TRUE.equals(moneyDeducted)){
+				transaction(customerID, "Main", amountToRepay);
+				moneyDeducted = false;
+				return dbStringReturn;
+			}
+			if(dbStringReturn.equals("Error : No active loan") && Boolean.TRUE.equals(moneyDeducted)){
+				transaction(customerID, "Main", amountToRepay);
+				moneyDeducted = false;
+				return dbStringReturn;
+			}
+		} catch (Exception e) {
+			transaction(customerID, "Main", amountToRepay);
+			moneyDeducted = false;
+			return "Please contact the bank with error code LR001";
+		}
+		return "Please contact the bank with error code LR002";
 	}
 
 	private String showActiveLoanInfo(String customerID) { // Method implemented by H. Chan

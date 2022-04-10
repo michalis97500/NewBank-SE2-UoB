@@ -17,7 +17,7 @@ public class NewBankClientHandler extends Thread {
 	private String error = "INVALID_INPUT";
 	private String cancel = "CANCEL";
 
-	public final void clearScreen(String prompt) { // Method implemented by M. Christou
+	private final void clearScreen(String prompt) { // Method implemented by M. Christou
 		try {
 			out.println("\033[H\033[2J");
 			out.flush();
@@ -30,7 +30,7 @@ public class NewBankClientHandler extends Thread {
 		}
 	}
 
-	public void mainMenu() { // Method implemented by M. Christou
+	private void mainMenu() { // Method implemented by M. Christou
 		try {
 			out.println("Press any key to return to main menu...");
 			in.read();
@@ -42,7 +42,35 @@ public class NewBankClientHandler extends Thread {
 		}
 	}
 
-	public String changePassword(String customerID) {// Method implemented by M. Christou
+	private String loanMenu(String customerID) { // Method implemented by M. Christou
+		try {
+			clearScreen(null);
+			out.println("1. Exit.");
+			out.println("2. Request a new loan - LOAN <Amount> <Days>");
+			out.println("3. Show current loan information - SHOWACTIVELOANINFO");
+			out.println("4. Repay loan - REPAYLOAN <Amount to repay>");
+			switch(in.readLine()){
+				case "2":
+				case "LOAN":
+					return loanBuilder(customerID);
+				case "3":
+				case "SHOWACTIVELOANINFO":
+					return "SHOWACTIVELOANINFO";
+				case "4":
+					return loanRepay(customerID);
+				case "1":
+				default:
+					return error;
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			out.println("Loan menu software error");
+			return error;
+		}
+	}
+
+	private String changePassword(String customerID) {// Method implemented by M. Christou
 		try {
 			clearScreen("Please enter your current password :");
 			out.println(getCurrentSalt(customerID));
@@ -76,11 +104,10 @@ public class NewBankClientHandler extends Thread {
 		out.println("2. Create account - NEWACCOUNT <Name>");
 		out.println("3. Pay person/entity - PAY <Entity> <Ammount>");
 		out.println("4. Transfer funds between accounts - MOVE <Amount> <From> <To>");
-		out.println("5. Loan request"); // added by ycanli
-		out.println("6. Show my loan account - SHOWMYLOANACCOUNT"); // added by H. Chan
-		out.println("7. Logout");
-		out.println("8. Exit");
-		out.println("9. Change password");
+		out.println("5. Loan menu"); // added by ycanli
+		out.println("6. Logout");
+		out.println("7. Exit");
+		out.println("8. Change password");
 		out.println("You may navigate the menu by entering the number or using the commands.");
 	}
 
@@ -380,7 +407,7 @@ public class NewBankClientHandler extends Thread {
 
 	}
 
-	public String loanBuilder(String customerID) // Cathy + Agnes
+	private String loanBuilder(String customerID) // Cathy + Agnes
 	{
 		String loanAmount;
 		String loanPeriodDays;
@@ -500,6 +527,51 @@ public class NewBankClientHandler extends Thread {
 
 	}
 	
+	private String loanRepay(String customerID){// Method by M.Christou
+		String responce = bank.processRequest(customerID, "SHOWACTIVELOANINFO");
+		String amount = null;
+		boolean amountCorrect = false;
+		clearScreen(responce);
+		out.println("To exit, type \"Cancel\" ");
+		out.println("Please enter the amount you would like to repay:");
+
+		while(!amountCorrect){
+			try{
+				String repayAmount = in.readLine();
+				if (repayAmount == null || repayAmount.isEmpty() || repayAmount.trim().isEmpty()) {
+					out.println("Repay amount cannot be empty.");
+					out.println("To exit, type \"Cancel\" ");
+					out.println("Please enter the amount you would like to repay:");
+				}
+				else{
+					if (repayAmount.equalsIgnoreCase(cancel)) {
+						out.println("Cancelling...");
+						return error;
+					}
+					else {
+						Double amountTest = Double.parseDouble(repayAmount);
+						//Checking for negative numbers
+						if (amountTest < 1) {
+							clearScreen("Minimum repay amount is $1.");
+							out.println("To exit, type \"Cancel\" ");
+							out.println("Please enter the amount you would like to repay:");
+						}
+						else {
+							amountCorrect = true;
+							amount = repayAmount;
+						}
+					}
+				}
+			} catch (Exception e) {
+				clearScreen("Please enter numbers only.");
+				out.println("To exit, type \"Cancel\" ");
+				out.println("Please enter the amount you would like to repay:");
+			}
+		}
+		
+		return "REPAYLOAN " + amount ;
+	}
+
 	@Override
 	public void run() { // Method modified by M.Christou for better UX
 		// keep getting requests from the client and processing them
@@ -565,28 +637,24 @@ public class NewBankClientHandler extends Thread {
 							break;
 						case "5":
 						case "Loan":
-							clearScreen(null);
-							request = loanBuilder(customerID);
+						case "Loan menu":
+							request = loanMenu(customerID);
 							if (request.equals(error)) {
 								validCommand = false;
 								mainMenu();
 							}
 							break;
 						case "6":
-							clearScreen(null);
-							request = "SHOWACTIVELOANINFO";
-							break;	
-						case "7":
 						case "Logout":
 							clearScreen(null);
 							Thread.currentThread().interrupt();
 							run();
 							break;
-						case "8":
+						case "7":
 						case "Exit":
 							out.println("CLIENT_CLOSE_COMMAND");
 							break;
-						case "9":
+						case "8":
 							request = changePassword(customerID);
 							if (request.equals(error)) {
 								validCommand = false;

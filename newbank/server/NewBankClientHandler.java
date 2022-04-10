@@ -77,7 +77,7 @@ public class NewBankClientHandler extends Thread {
 		out.println("3. Pay person/entity - PAY <Entity> <Ammount>");
 		out.println("4. Transfer funds between accounts - MOVE <Amount> <From> <To>");
 		out.println("5. Loan request"); // added by ycanli
-		out.println("6. Show my loan account - SHOWMYLOANACCOUNT"); // added by H. Chan
+		out.println("6. Show my loan account - SHOWACTIVELOANINFO"); // added by H. Chan
 		out.println("7. Logout");
 		out.println("8. Exit");
 		out.println("9. Change password");

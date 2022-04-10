@@ -361,6 +361,8 @@ public class DatabaseHandler {
     updateAccountInfo("2", "John", "$2a$10$RkrdW3pxOvLIZlTV0kfiiuo8zSshxC3RofVWDiHukv37uabGRoylq", "$2a$10$RkrdW3pxOvLIZlTV0kfiiu", "John", "100", "50", "2500", "60");
     updateAccountInfo("3", "Test", "$2a$10$RkrdW3pxOvLIZlTV0kfiiuo8zSshxC3RofVWDiHukv37uabGRoylq", "$2a$10$RkrdW3pxOvLIZlTV0kfiiu", "Test", noaccount, "999999", noaccount,
         "100");
+    updateAccountInfo("4", "Test2", "$2a$10$RkrdW3pxOvLIZlTV0kfiiuo8zSshxC3RofVWDiHukv37uabGRoylq", "$2a$10$RkrdW3pxOvLIZlTV0kfiiu", "Test2", noaccount, "999999", noaccount,
+        "100");
   }
 
   public String changePassword(String customerID, String oldPassHash, String newPassHash, String salt) { // Method

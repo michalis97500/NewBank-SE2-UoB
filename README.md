@@ -34,3 +34,4 @@ e.g. PAY John 100
 Returns SUCCESS or FAIL
 
 Note: 
+ To enhance user experience a navigation menu has been added for all functions

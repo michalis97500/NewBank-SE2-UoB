@@ -1,17 +1,22 @@
 package newbank.server;
 
 import java.sql.SQLException;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class NewBank {
 
 	private static final NewBank bank = new NewBank();
+	private Integer minCreditScore = 75;
+	private String lowInterestPeriod = "30";
 	DatabaseHandler dbHandle = new DatabaseHandler();
 
 	private NewBank() {
 		try {
 			dbHandle.connectDatabase();
 			dbHandle.initiateDatabase();
-
+			dbHandle.addTestData();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -60,6 +65,9 @@ public class NewBank {
 					case "SHOWMYACCOUNTS":
 						return showMyAccounts(customerID);
 					// Added by M. Christou
+					case "SHOWACTIVELOANINFO":
+						return showActiveLoanInfo(customerID);
+					// Added by H. Chan
 					case "NEWACCOUNT":
 						return newAccount(customerID, command[1]);
 					// Added by M. Christou
@@ -72,8 +80,12 @@ public class NewBank {
 						return changePassword(customerID, command[2], command[3], command[4]);
 					case "GETCURRENTSALT":
 						return getCurrentSalt(customerID);
+					case "LOAN": // Y.Canli + M.Christou
+						return newLoan(customerID, command[1], command[2]);
+					case "REPAYLOAN": // M.Christou
+						return repayLoan(customerID, command[1]);
 					default:
-						return "FAIL";
+						return "FAIL : No such command.";
 				}
 			}
 		} catch (SQLException e) {
@@ -94,6 +106,60 @@ public class NewBank {
 	private String showMyAccounts(String customerID) { // Method implemented by M. Christou
 		try {
 			return dbHandle.showMyAccounts(customerID);
+		} catch (Exception e) {
+			return "Cannot display accounts";
+		}
+
+	}
+
+	private String repayLoan(String customerID, String amount) { // Method implemented by M. Christou
+		Double amountToRepay = null;
+		Boolean moneyDeducted = false;
+		// Valid amount
+		try {
+			amountToRepay = Double.parseDouble(amount);
+		} catch (Exception e) {
+			return "Amount entered is not valid.";
+		}
+
+		// Check if customer has enough money - deduct it
+		try {
+			if (transaction(customerID, "Main", -amountToRepay).equals("SUCCESS")) {
+				moneyDeducted = true;
+			}
+		} catch (Exception e) {
+			return "Cannot deduct money from account. Please check your balance or contact the bank.";
+		}
+
+		// Update loan balance
+		try {
+			String dbStringReturn = dbHandle.modifyLoanBalance(customerID, amountToRepay);
+			if ((dbStringReturn.equals("Loan repaid") && Boolean.TRUE.equals(moneyDeducted))
+					|| (dbStringReturn.startsWith("Loan repayment successfull.") && Boolean.TRUE.equals(moneyDeducted))) {
+				moneyDeducted = false;
+				return dbStringReturn;
+			}
+			if (dbStringReturn.equals("Repay amount is more than outstanding amount") && Boolean.TRUE.equals(moneyDeducted)) {
+				transaction(customerID, "Main", amountToRepay);
+				moneyDeducted = false;
+				return dbStringReturn;
+			}
+			if (dbStringReturn.equals("Error : No active loan") && Boolean.TRUE.equals(moneyDeducted)) {
+				transaction(customerID, "Main", amountToRepay);
+				moneyDeducted = false;
+				return dbStringReturn;
+			}
+		} catch (Exception e) {
+			transaction(customerID, "Main", amountToRepay);
+			moneyDeducted = false;
+			return "Please contact the bank with error code LR001";
+		}
+		return "Please contact the bank with error code LR002";
+	}
+
+	private String showActiveLoanInfo(String customerID) { // Method implemented by H. Chan
+		try {
+			return dbHandle.activeLoanInformation(customerID);
 		} catch (Exception e) {
 			return "Cannot display accounts";
 		}
@@ -242,7 +308,58 @@ public class NewBank {
 
 	}
 
-	public String changePassword(String customerID, String oldPassHash, String newPassHash, String salt) { // Method implemented by M. Christou
+	public String changePassword(String customerID, String oldPassHash, String newPassHash, String salt) { // Method
+																																																					// implemented
+																																																					// by M.
+																																																					// Christou
 		return dbHandle.changePassword(customerID, oldPassHash, newPassHash, salt);
 	}
+
+	public String newLoan(String customerID, String loanAmount, String loanPeriodDays) {
+
+		// Check if user is eligible for loan.
+		try {
+			if (Boolean.TRUE.equals(dbHandle.customerHasActiveLoan(customerID))) {
+				return "Error : You already have an active loan.";
+			}
+			int creditscore = Integer.parseInt(dbHandle.getCreditScore(customerID));
+			if (creditscore <= minCreditScore) {
+				return "Error : Your credit score is " + creditscore + ". The minimum score is " + minCreditScore;
+			}
+			if (Boolean.FALSE.equals(dbHandle.accountExists(customerID, "Main"))) {
+				return "Error : You do not have an active Main account. ";
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "Error: Please contact the bank with error code L-001";
+		}
+
+		// Confirm with the user the terms of loan
+		Double interestRate = 20.0;
+		if (Integer.parseInt(loanPeriodDays) <= Integer.parseInt(lowInterestPeriod)) {
+			interestRate = 15.0;
+		}
+		Double payable = Double.parseDouble(loanAmount) * (1 + interestRate / 100);
+		payable = (double) (Math.round(payable) * 100.0 / 100.0);
+		Double loanAmountDouble = (double) (Math.round(Double.parseDouble(loanAmount)) * 100.0 / 100.0);
+		try {
+			String timeStamp = new SimpleDateFormat("yyyy MM dd HH mm").format(new Date());
+			if (Boolean.TRUE
+					.equals(dbHandle.createLoan(customerID, timeStamp + " C:" + customerID, loanAmountDouble.toString(), payable.toString(),
+							payable.toString(), loanPeriodDays , "ACTIVE"))
+					&&
+					dbHandle.modifyAccountBalance(customerID, "Main", loanAmountDouble).equals("SUCCESS")) {
+						DecimalFormat df = new DecimalFormat("###.00");
+					return "Success. You have been granted a loan of $" + df.format(loanAmountDouble) + " repayable in " + loanPeriodDays
+							+ " days. The interest rate is " +
+							interestRate + "%. Total amount repayable is : " + df.format(payable);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "Error: Please contact the bank with error code L-002";
+		}
+		return "Error: Please contact the bank with error code L-003";
+	}
+
 }

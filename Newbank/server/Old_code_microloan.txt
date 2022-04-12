@@ -1,0 +1,26 @@
+package newbank.server;
+
+public class Old_code_microloan{
+	private String getLoanAvailable(String customerID) { // Method implemented by ycanli
+		try {
+			return dbHandle.getLoanAvailable(customerID);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	public String getLoanScore(String customerID) { // Method implemented by ycanli
+		try {
+			return dbHandle.getLoanScore(customerID);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	public String setLoanAmount(String customerID,String loanAmount,String startType) { // Method implemented by ycanli
+		return dbHandle.setLoanAmount(customerID,loanAmount,startType);
+	}
+  
+}

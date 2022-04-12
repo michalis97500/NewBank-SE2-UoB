@@ -12,6 +12,12 @@ SHOWMYACCOUNTS
 Returns a list of all the customers accounts along with their current balance 
 e.g. Main: 1000.0 
 
+SHOWACTIVELOANINFO
+Returns the a string of outstanding loan (what needs to be paid) and total repayment (the total amount customer has agreed on to pay)
+details
+e.g. Outstanding : $3000
+Total Repayment : $3590
+
 NEWACCOUNT <Name>
 e.g. NEWACCOUNT Savings
 Returns SUCCESS or FAIL

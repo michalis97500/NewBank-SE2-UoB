@@ -1,6 +1,7 @@
 package newbank.server;
 
 import java.sql.SQLException;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -349,9 +350,10 @@ public class NewBank {
 							payable.toString(), loanPeriodDays , "ACTIVE"))
 					&&
 					dbHandle.modifyAccountBalance(customerID, "Main", loanAmountDouble).equals("SUCCESS")) {
-				return "Success. You have been granted a loan of $" + loanAmountDouble + " repayable in " + loanPeriodDays
-						+ " days. The interest rate is " +
-						interestRate + "%. Total amount repayable is : " + payable;
+						DecimalFormat df = new DecimalFormat("###.00");
+					return "Success. You have been granted a loan of $" + df.format(loanAmountDouble) + " repayable in " + loanPeriodDays
+							+ " days. The interest rate is " +
+							interestRate + "%. Total amount repayable is : " + df.format(payable);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

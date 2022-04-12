@@ -510,7 +510,7 @@ public class NewBankClientHandler extends Thread {
 			// Rounding up numbers to 2 decimal places
 			DecimalFormat df = new DecimalFormat("###.00");
 			clearScreen("Loan requested is for $" + df.format(amount) + " for " + loanPeriodDays
-					+ " days. The interest rate is 20% making the total repayment amount to New Bank $"
+					+ " days. The interest rate is "+ interestRate + "% making the total repayment amount to New Bank $"
 					+ df.format(repaymentAmount) + ". Would you like to confirm? \n");
 		}
 

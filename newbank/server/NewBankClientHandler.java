@@ -429,13 +429,15 @@ public class NewBankClientHandler extends Thread {
 			}
 			Double amount = Double.parseDouble(loanAmount);
 			// Checking for negative numbers
-			if (amount <= 0) {
-				clearScreen("Minimum loan amount is $1.");
+			if (amount < 1) {
+				clearScreen("Minimum loan amount is $1. Press any key to start again");
+				in.readLine();
 				return loanBuilder(customerID);
 			}
 			// Setting maximum loan amount
 			if (amount > 100000) {
-				clearScreen("Maximum loan amount is $100,000.");
+				clearScreen("Maximum loan amount is $100,000. Press any key to start again");
+				in.readLine();
 				return loanBuilder(customerID);
 			}
 		} // Error handling added
@@ -464,16 +466,19 @@ public class NewBankClientHandler extends Thread {
 			Double days = Double.parseDouble(loanPeriodDays);
 			// Checking for negative numbers
 			if (days <= 0) {
-				clearScreen("Minimum loan days is 1 day. Loan request starting again...");
+				clearScreen("Minimum loan days is 1 day. Press any key to start again");
+				in.readLine();
 				return loanBuilder(customerID);
 			}
 			// Set maximum loan timeframe
 			if (days > 365) {
-				clearScreen("Maximum loan days is 365 days. Loan request starting again...");
+				clearScreen("Maximum loan days is 365 days. Press any key to start again");
+				in.readLine();
 				return loanBuilder(customerID);
 			}
 			if (loanPeriodDays.contains(".")) {
-				clearScreen("Please specify loan period in full days only. Loan request starting again...");
+				clearScreen("Please specify loan period in full days only. Press any key to start again");
+				in.readLine();
 				return loanBuilder(customerID);
 			}
 		}

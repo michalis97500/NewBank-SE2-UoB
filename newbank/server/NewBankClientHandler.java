@@ -101,7 +101,7 @@ public class NewBankClientHandler extends Thread {
 
 	private void printInterfaceOption() {
 		// Added by M. Christou
-		out.println("1. Show all accounts inforamtion - SHOWMYACCOUNTS");
+		out.println("1. Show all accounts information - SHOWMYACCOUNTS");
 		out.println("2. Create account - NEWACCOUNT <Name>");
 		out.println("3. Pay person/entity - PAY <Entity> <Ammount>");
 		out.println("4. Transfer funds between accounts - MOVE <Amount> <From> <To>");

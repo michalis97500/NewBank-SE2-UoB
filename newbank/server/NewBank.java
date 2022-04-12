@@ -7,7 +7,7 @@ import java.util.Date;
 public class NewBank {
 
 	private static final NewBank bank = new NewBank();
-	private String minCreditScore = "75";
+	private Integer minCreditScore = 75;
 	private String lowInterestPeriod = "30";
 	DatabaseHandler dbHandle = new DatabaseHandler();
 
@@ -15,7 +15,7 @@ public class NewBank {
 		try {
 			dbHandle.connectDatabase();
 			dbHandle.initiateDatabase();
-
+			dbHandle.addTestData();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -81,7 +81,7 @@ public class NewBank {
 						return getCurrentSalt(customerID);
 					case "LOAN": // Y.Canli + M.Christou
 						return newLoan(customerID, command[1], command[2]);
-					case "REPAYLOAN": //M.Christou
+					case "REPAYLOAN": // M.Christou
 						return repayLoan(customerID, command[1]);
 					default:
 						return "FAIL : No such command.";
@@ -111,38 +111,39 @@ public class NewBank {
 
 	}
 
-	private String repayLoan(String customerID, String amount){ // Method implemented by M. Christou
+	private String repayLoan(String customerID, String amount) { // Method implemented by M. Christou
 		Double amountToRepay = null;
 		Boolean moneyDeducted = false;
-		//Valid amount
+		// Valid amount
 		try {
 			amountToRepay = Double.parseDouble(amount);
 		} catch (Exception e) {
 			return "Amount entered is not valid.";
 		}
-		
-		//Check if customer has enough money - deduct it
+
+		// Check if customer has enough money - deduct it
 		try {
-			if(transaction(customerID, "Main", -amountToRepay).equals("SUCCESS")){
+			if (transaction(customerID, "Main", -amountToRepay).equals("SUCCESS")) {
 				moneyDeducted = true;
 			}
 		} catch (Exception e) {
 			return "Cannot deduct money from account. Please check your balance or contact the bank.";
 		}
 
-		//Update loan balance
+		// Update loan balance
 		try {
 			String dbStringReturn = dbHandle.modifyLoanBalance(customerID, amountToRepay);
-			if( (dbStringReturn.equals("Loan repaid") && Boolean.TRUE.equals(moneyDeducted)) || (dbStringReturn.startsWith("Loan repayment successfull.") && Boolean.TRUE.equals(moneyDeducted)) ){
+			if ((dbStringReturn.equals("Loan repaid") && Boolean.TRUE.equals(moneyDeducted))
+					|| (dbStringReturn.startsWith("Loan repayment successfull.") && Boolean.TRUE.equals(moneyDeducted))) {
 				moneyDeducted = false;
 				return dbStringReturn;
 			}
-			if(dbStringReturn.equals("Repay amount is more than outstanding amount") && Boolean.TRUE.equals(moneyDeducted)){
+			if (dbStringReturn.equals("Repay amount is more than outstanding amount") && Boolean.TRUE.equals(moneyDeducted)) {
 				transaction(customerID, "Main", amountToRepay);
 				moneyDeducted = false;
 				return dbStringReturn;
 			}
-			if(dbStringReturn.equals("Error : No active loan") && Boolean.TRUE.equals(moneyDeducted)){
+			if (dbStringReturn.equals("Error : No active loan") && Boolean.TRUE.equals(moneyDeducted)) {
 				transaction(customerID, "Main", amountToRepay);
 				moneyDeducted = false;
 				return dbStringReturn;
@@ -321,7 +322,7 @@ public class NewBank {
 				return "Error : You already have an active loan.";
 			}
 			int creditscore = Integer.parseInt(dbHandle.getCreditScore(customerID));
-			if (creditscore <= 60) {
+			if (creditscore <= minCreditScore) {
 				return "Error : Your credit score is " + creditscore + ". The minimum score is " + minCreditScore;
 			}
 			if (Boolean.FALSE.equals(dbHandle.accountExists(customerID, "Main"))) {
@@ -339,14 +340,18 @@ public class NewBank {
 			interestRate = 15.0;
 		}
 		Double payable = Double.parseDouble(loanAmount) * (1 + interestRate / 100);
-
+		payable = (double) (Math.round(payable) * 100.0 / 100.0);
+		Double loanAmountDouble = (double) (Math.round(Double.parseDouble(loanAmount)) * 100.0 / 100.0);
 		try {
-			String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
-			if (Boolean.TRUE.equals(dbHandle.createLoan(customerID, timeStamp, loanAmount.toString(), payable.toString(), payable.toString(), "ACTIVE")) && 
-					dbHandle.modifyAccountBalance(customerID, "Main", Double.parseDouble(loanAmount)).equals("SUCCESS")	){
-				return "Success. You have been granted a loan of $" + loanAmount + " repayable in " + loanPeriodDays
-				+ " days. The interest rate is " +
-				interestRate + "%. Total amount repayable is : " + payable;
+			String timeStamp = new SimpleDateFormat("yyyy MM dd HH mm").format(new Date());
+			if (Boolean.TRUE
+					.equals(dbHandle.createLoan(customerID, timeStamp, loanAmountDouble.toString(), payable.toString(),
+							payable.toString(), "ACTIVE"))
+					&&
+					dbHandle.modifyAccountBalance(customerID, "Main", loanAmountDouble).equals("SUCCESS")) {
+				return "Success. You have been granted a loan of $" + loanAmountDouble + " repayable in " + loanPeriodDays
+						+ " days. The interest rate is " +
+						interestRate + "%. Total amount repayable is : " + payable;
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -49,12 +49,13 @@ public class NewBankClientHandler extends Thread {
 			out.println("2. Request a new loan - LOAN <Amount> <Days>");
 			out.println("3. Show current loan information - SHOWACTIVELOANINFO");
 			out.println("4. Repay loan - REPAYLOAN <Amount to repay>");
-			switch(in.readLine()){
+			switch (in.readLine()) {
 				case "2":
 				case "LOAN":
 					return loanBuilder(customerID);
 				case "3":
 				case "SHOWACTIVELOANINFO":
+					clearScreen(null);
 					return "SHOWACTIVELOANINFO";
 				case "4":
 					return loanRepay(customerID);
@@ -411,9 +412,10 @@ public class NewBankClientHandler extends Thread {
 	{
 		String loanAmount;
 		String loanPeriodDays;
-		
-		// Request loan amount from the user 
+
+		// Request loan amount from the user
 		try {
+			clearScreen(null);
 			out.println("Please enter the loan amount you would like to borrow.");
 			out.println("To cancel at any time, please input \"CANCEL\"");
 			loanAmount = in.readLine();
@@ -426,28 +428,27 @@ public class NewBankClientHandler extends Thread {
 				return error;
 			}
 			Double amount = Double.parseDouble(loanAmount);
-			//Checking for negative numbers
+			// Checking for negative numbers
 			if (amount <= 0) {
 				clearScreen("Minimum loan amount is $1.");
 				return loanBuilder(customerID);
 			}
-			//Setting maximum loan amount
+			// Setting maximum loan amount
 			if (amount > 100000) {
 				clearScreen("Maximum loan amount is $100,000.");
 				return loanBuilder(customerID);
 			}
-		} //Error handling added		
+		} // Error handling added
 		catch (NumberFormatException e) {
 			clearScreen("Amount entered must be numbers only, please re-enter the loan amount you would like to borrow.");
 			return loanBuilder(customerID);
-		}
-		 catch (Exception e) {
+		} catch (Exception e) {
 			out.println("Error in loan amount requested, aborting.");
 			e.printStackTrace();
 			return error;
-			}
+		}
 
-			// Request number of days for the loan from the user
+		// Request number of days for the loan from the user
 		try {
 			clearScreen("Please enter your preferred loan repayment time period in days:");
 			out.println("To cancel at any time, please input \"CANCEL\"");
@@ -459,14 +460,14 @@ public class NewBankClientHandler extends Thread {
 			if (loanPeriodDays.equalsIgnoreCase(cancel)) {
 				out.println("Cancelling...");
 				return error;
-			}	
+			}
 			Double days = Double.parseDouble(loanPeriodDays);
-			//Checking for negative numbers
+			// Checking for negative numbers
 			if (days <= 0) {
 				clearScreen("Minimum loan days is 1 day. Loan request starting again...");
 				return loanBuilder(customerID);
 			}
-			//Set maximum loan timeframe
+			// Set maximum loan timeframe
 			if (days > 365) {
 				clearScreen("Maximum loan days is 365 days. Loan request starting again...");
 				return loanBuilder(customerID);
@@ -476,46 +477,49 @@ public class NewBankClientHandler extends Thread {
 				return loanBuilder(customerID);
 			}
 		}
-		//Error Handling 
+		// Error Handling
 		catch (NumberFormatException e) {
 			clearScreen("Days entered must be numbers only. Loan request starting again...");
 			return loanBuilder(customerID);
-			} 
-		catch (Exception e) {
+		} catch (Exception e) {
 			out.println("Error in loan repayment time request, aborting.");
 			e.printStackTrace();
 			return error;
-			}
-		
-		//Offer the interest rates to the user		
+		}
 
-			if(Integer.parseInt(loanPeriodDays) <= 30){	
-				Double interestRate = 15.0;
-				Double amount = Double.parseDouble(loanAmount);
-				Double repaymentAmount = Double.parseDouble(loanAmount) * (1 + interestRate / 100);
-				// Rounding up numbers to 2 decimal places
-				DecimalFormat df = new DecimalFormat("###.00");
-				clearScreen("Loan requested is for $" + df.format(amount) + " for " + loanPeriodDays + " days. The interest rate is 15% making the total repayment amount to New Bank $" + df.format(repaymentAmount) + ". Would you like to confirm?\n");
-			}else{
-				Double interestRate = 20.0;
-				Double amount = Double.parseDouble(loanAmount);
-				Double repaymentAmount = Double.parseDouble(loanAmount) * (1 + interestRate / 100);
-				// Rounding up numbers to 2 decimal places
-				DecimalFormat df = new DecimalFormat("###.00");
-				clearScreen("Loan requested is for $" + df.format(amount) + " for " + loanPeriodDays + " days. The interest rate is 20% making the total repayment amount to New Bank $" + df.format(repaymentAmount) + ". Would you like to confirm? \n");
-			}
+		// Offer the interest rates to the user
+
+		if (Integer.parseInt(loanPeriodDays) <= 30) {
+			Double interestRate = 15.0;
+			Double amount = Double.parseDouble(loanAmount);
+			Double repaymentAmount = Double.parseDouble(loanAmount) * (1 + interestRate / 100);
+			// Rounding up numbers to 2 decimal places
+			DecimalFormat df = new DecimalFormat("###.00");
+			clearScreen("Loan requested is for $" + df.format(amount) + " for " + loanPeriodDays
+					+ " days. The interest rate is 15% making the total repayment amount to New Bank $"
+					+ df.format(repaymentAmount) + ". Would you like to confirm?\n");
+		} else {
+			Double interestRate = 20.0;
+			Double amount = Double.parseDouble(loanAmount);
+			Double repaymentAmount = Double.parseDouble(loanAmount) * (1 + interestRate / 100);
+			// Rounding up numbers to 2 decimal places
+			DecimalFormat df = new DecimalFormat("###.00");
+			clearScreen("Loan requested is for $" + df.format(amount) + " for " + loanPeriodDays
+					+ " days. The interest rate is 20% making the total repayment amount to New Bank $"
+					+ df.format(repaymentAmount) + ". Would you like to confirm? \n");
+		}
 
 		out.println("1. Confirm");
 		out.println("2. Reject");
 		String confirmation;
 		try {
 			confirmation = in.readLine();
-			
+
 			switch (confirmation) {
 				case "1":
 				case "Confirm":
 				case "Yes":
-					return "LOAN " + customerID  + " " + loanAmount  + " " + loanPeriodDays;
+					return "LOAN " + loanAmount + " " + loanPeriodDays;
 				default:
 					out.println("Action has been cancelled");
 					return error;
@@ -526,37 +530,39 @@ public class NewBankClientHandler extends Thread {
 		}
 
 	}
-	
-	private String loanRepay(String customerID){// Method by M.Christou
+
+	private String loanRepay(String customerID) {// Method by M.Christou
 		String responce = bank.processRequest(customerID, "SHOWACTIVELOANINFO");
+		if (responce.equals("Cannot display accounts") || responce.equals("No active loan found")) {
+			clearScreen(responce);
+			mainMenu();
+			return "";
+		}
 		String amount = null;
 		boolean amountCorrect = false;
 		clearScreen(responce);
 		out.println("To exit, type \"Cancel\" ");
 		out.println("Please enter the amount you would like to repay:");
 
-		while(!amountCorrect){
-			try{
+		while (!amountCorrect) {
+			try {
 				String repayAmount = in.readLine();
 				if (repayAmount == null || repayAmount.isEmpty() || repayAmount.trim().isEmpty()) {
 					out.println("Repay amount cannot be empty.");
 					out.println("To exit, type \"Cancel\" ");
 					out.println("Please enter the amount you would like to repay:");
-				}
-				else{
+				} else {
 					if (repayAmount.equalsIgnoreCase(cancel)) {
 						out.println("Cancelling...");
 						return error;
-					}
-					else {
+					} else {
 						Double amountTest = Double.parseDouble(repayAmount);
-						//Checking for negative numbers
+						// Checking for negative numbers
 						if (amountTest < 1) {
 							clearScreen("Minimum repay amount is $1.");
 							out.println("To exit, type \"Cancel\" ");
 							out.println("Please enter the amount you would like to repay:");
-						}
-						else {
+						} else {
 							amountCorrect = true;
 							amount = repayAmount;
 						}
@@ -568,8 +574,8 @@ public class NewBankClientHandler extends Thread {
 				out.println("Please enter the amount you would like to repay:");
 			}
 		}
-		
-		return "REPAYLOAN " + amount ;
+
+		return "REPAYLOAN " + amount;
 	}
 
 	@Override

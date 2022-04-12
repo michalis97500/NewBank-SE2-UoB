@@ -180,7 +180,6 @@ public class DatabaseHandler {
       statement.close();
     }
 
-
     // Put accounts in a string to return
     StringBuilder accounts = new StringBuilder();
     try {
@@ -200,7 +199,7 @@ public class DatabaseHandler {
     }
 
   }
-    
+
   public boolean customerExists(String customerID) throws SQLException {// Method implemented by M. Christou
     Statement statement = databaseConnection.createStatement();
     try {
@@ -356,12 +355,16 @@ public class DatabaseHandler {
   }
 
   public void addTestData() {// Method implemented by M. Christou
-    updateAccountInfo("1", "Bhagy", "$2a$10$RkrdW3pxOvLIZlTV0kfiiuo8zSshxC3RofVWDiHukv37uabGRoylq", "$2a$10$RkrdW3pxOvLIZlTV0kfiiu", "Bhagy", noaccount, noaccount, noaccount,
+    updateAccountInfo("1", "Bhagy", "$2a$10$RkrdW3pxOvLIZlTV0kfiiuo8zSshxC3RofVWDiHukv37uabGRoylq",
+        "$2a$10$RkrdW3pxOvLIZlTV0kfiiu", "Bhagy", noaccount, noaccount, noaccount,
         "0");
-    updateAccountInfo("2", "John", "$2a$10$RkrdW3pxOvLIZlTV0kfiiuo8zSshxC3RofVWDiHukv37uabGRoylq", "$2a$10$RkrdW3pxOvLIZlTV0kfiiu", "John", "100", "50", "2500", "60");
-    updateAccountInfo("3", "Test", "$2a$10$RkrdW3pxOvLIZlTV0kfiiuo8zSshxC3RofVWDiHukv37uabGRoylq", "$2a$10$RkrdW3pxOvLIZlTV0kfiiu", "Test", noaccount, "999999", noaccount,
+    updateAccountInfo("2", "John", "$2a$10$RkrdW3pxOvLIZlTV0kfiiuo8zSshxC3RofVWDiHukv37uabGRoylq",
+        "$2a$10$RkrdW3pxOvLIZlTV0kfiiu", "John", "100", "50", "2500", "60");
+    updateAccountInfo("3", "Test", "$2a$10$RkrdW3pxOvLIZlTV0kfiiuo8zSshxC3RofVWDiHukv37uabGRoylq",
+        "$2a$10$RkrdW3pxOvLIZlTV0kfiiu", "Test", noaccount, "999999", noaccount,
         "100");
-    updateAccountInfo("4", "Test2", "$2a$10$RkrdW3pxOvLIZlTV0kfiiuo8zSshxC3RofVWDiHukv37uabGRoylq", "$2a$10$RkrdW3pxOvLIZlTV0kfiiu", "Test2", noaccount, "999999", noaccount,
+    updateAccountInfo("4", "Test2", "$2a$10$RkrdW3pxOvLIZlTV0kfiiuo8zSshxC3RofVWDiHukv37uabGRoylq",
+        "$2a$10$RkrdW3pxOvLIZlTV0kfiiu", "Test2", noaccount, "999999", noaccount,
         "100");
   }
 
@@ -416,6 +419,14 @@ public class DatabaseHandler {
 
   public boolean createLoan(String id, String loanID, String loanAmount, String totalDebt,
       String outstanding, String completed) { // Method implemented by ycanli + modified by M.Christou
+    try {
+      if (Boolean.TRUE.equals(customerHasActiveLoan(id))) {
+        return false;
+      }
+    } catch (SQLException e1) {
+      e1.printStackTrace();
+    }
+
     try (PreparedStatement ps = this.databaseConnection.prepareStatement(updateAllLoanInfo)) {
       ps.setString(1, id);
       ps.setString(2, loanID);
@@ -428,7 +439,6 @@ public class DatabaseHandler {
           .print(
               id + "\t" + loanID + "\t" + loanAmount + "\t" + totalDebt + "\t" + outstanding + "\t" + completed + "\t");
       return true;
-
     } catch (SQLException e) {
       System.out.println("FALSE");
       e.printStackTrace();
@@ -463,14 +473,15 @@ public class DatabaseHandler {
   }
 
   public String activeLoanInformation(String customerID) throws SQLException {// Method implemented by H. Chan
-    //Modified by M.Christou
+    // Modified by M.Christou
     Statement statement = databaseConnection.createStatement();
     try {
       String idAndLoan = "SELECT id, Completed, Outstanding, Total_Repayment FROM " + loanTable;
       ResultSet results = statement.executeQuery(idAndLoan);
       while (results.next()) {
         if (customerID.equals(results.getString("id")) && results.getString("Completed").equals("ACTIVE")) {
-          return "Outstanding amount : $" + results.getString("Outstanding") + "\n" + "Total Repayment : $" + results.getString("Total_Repayment");
+          return "Outstanding amount : $" + results.getString("Outstanding") + "\n" + "Total Repayment : $"
+              + results.getString("Total_Repayment");
         }
       }
       return "No active loan found";
@@ -480,7 +491,7 @@ public class DatabaseHandler {
     } finally {
       statement.close();
     }
-  }  
+  }
 
   public String getCreditScore(String customerID) throws SQLException {// Method implemented by ycanli + modified by
                                                                        // M.Christou
@@ -506,29 +517,28 @@ public class DatabaseHandler {
     // Method implemented by M.Christou
     Statement statement = databaseConnection.createStatement();
     try {
-      String idAndLoan = "SELECT id, loan_id ,Total_Repayment, Outstanding, Completed FROM " + loanTable;
+      String idAndLoan = "SELECT id, loan_id , Outstanding, Completed FROM " + loanTable;
       ResultSet results = statement.executeQuery(idAndLoan);
       while (results.next()) {
-        if (customerID.equals(results.getString("id")) && results.getString("Completed").equals("ACTIVE")) { // if we
-                                                                                                             // are here
-                                                                                                             // that
-                                                                                                             // means we
-                                                                                                             // have the
-                                                                                                             // correct
-                                                                                                             // loan
-          Double currentAmount = Double.parseDouble(results.getString("Outstanding"));
-          Double fullAmount = Double.parseDouble(results.getString("Total_Repayment"));
-          currentAmount += amount;
-          if (Objects.equals(currentAmount, fullAmount)
-              && Boolean.TRUE.equals(setLoanComplete(results.getString("loan_id")))) {
-            return "Loan repaid";
+        if (customerID.equals(results.getString("id")) && results.getString("Completed").equals("ACTIVE")) {
+          Double outStanding = Double.parseDouble(results.getString("Outstanding"));
+          Double currentAmount = outStanding - amount;
+          if (Objects.equals(currentAmount, 0.0)) {
+            Boolean repaid = setLoanComplete(results.getString("loan_id"));
+            if (Boolean.TRUE.equals(repaid)) {
+              return "Loan repaid";
+            }
+            return "Error : Please contact the bank with code LR004";
           }
-          if (currentAmount > fullAmount) {
+
+          if (currentAmount < 0) {
             return "Repay amount is more than outstanding amount";
           }
-          if (currentAmount < fullAmount
-              && Boolean.TRUE.equals(setLoanAmount(results.getString("loan_id"), currentAmount))) {
-            return "Loan repayment successfull. New outstanding amount : " + (fullAmount - currentAmount);
+          if (currentAmount > 0) {
+            Boolean repaid = setLoanAmount(results.getString("loan_id"), currentAmount);
+            if (Boolean.TRUE.equals(repaid)) {
+              return "Loan repayment successfull. New outstanding amount : " + (currentAmount);
+            }
           }
         }
       }
@@ -544,7 +554,7 @@ public class DatabaseHandler {
   public Boolean setLoanComplete(String loanID) throws SQLException {
     // Method implemented by M.Christou
     try (PreparedStatement ps = this.databaseConnection.prepareStatement(
-        "UPDATE " + loanTable + " SET Completed='COMPLETE' WHERE loan_id = " + loanID)) {
+        "UPDATE " + loanTable + " SET Completed='COMPLETE' WHERE loan_id = '" + loanID + "'")) {
       ps.executeUpdate();
       return true;
     } catch (Exception e) {
@@ -556,7 +566,7 @@ public class DatabaseHandler {
   public Boolean setLoanAmount(String loanID, Double amount) throws SQLException {
     // Method implemented by M.Christou
     try (PreparedStatement ps = this.databaseConnection.prepareStatement(
-        "UPDATE " + loanTable + " SET Outstanding='" + amount.toString() + "' WHERE loan_id = " + loanID)) {
+        "UPDATE " + loanTable + " SET Outstanding='" + amount.toString() + "' WHERE loan_id = '" + loanID + "'")) {
       ps.executeUpdate();
       return true;
     } catch (Exception e) {

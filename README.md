@@ -18,6 +18,9 @@ details
 e.g. Outstanding : $3000
 Total Repayment : $3590
 
+REQUESTLOAN <Amount> <Days>
+e.g. REQUESTLOAN 100 100
+
 NEWACCOUNT <Name>
 e.g. NEWACCOUNT Savings
 Returns SUCCESS or FAIL

@@ -353,7 +353,7 @@ public class NewBank {
 						DecimalFormat df = new DecimalFormat("###.00");
 					return "Success. You have been granted a loan of $" + df.format(loanAmountDouble) + " repayable in " + loanPeriodDays
 							+ " days. The interest rate is " +
-							interestRate + "%. Total amount repayable is : " + df.format(payable);
+							interestRate + "%. Total amount repayable is $: " + df.format(payable);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

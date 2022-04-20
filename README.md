@@ -35,3 +35,8 @@ Returns SUCCESS or FAIL
 
 Note: 
  To enhance user experience a navigation menu has been added for all functions
+Accounts passwords combinations
+Test pass
+Test2 pass
+John pass
+Bhagy pass
